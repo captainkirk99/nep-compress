@@ -7,6 +7,7 @@ include(CTest)
 option(NEPCOMPRESS_BUILD_LZ4 "Build the LZ4 API and HDF5 plugin" ON)
 option(NEPCOMPRESS_BUILD_BZIP2 "Build the BZIP2 API (requires an external HDF5 plugin)" OFF)
 option(NEPCOMPRESS_ENABLE_FORTRAN "Build Fortran compression wrappers" ON)
+option(NEPCOMPRESS_BUILD_BENCHMARKS "Build slow LZ4/BZIP2 performance examples" OFF)
 set(NEPCOMPRESS_BZIP2_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 307")
 set(NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR "" CACHE PATH "Optional previous LZ4 plugin directory for cross-plugin file tests")
 
@@ -108,4 +109,7 @@ install(EXPORT NEPCompressTargets
 
 if(BUILD_TESTING)
     add_subdirectory(test)
+endif()
+if(NEPCOMPRESS_BUILD_BENCHMARKS)
+    add_subdirectory(examples/performance)
 endif()

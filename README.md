@@ -1,12 +1,54 @@
 # nep-compress
 
-Standalone NetCDF-4/HDF5 LZ4 and BZIP2 C/Fortran compression APIs. The LZ4
-HDF5 plugin is built here; BZIP2 uses an external HDF5 plugin (not merely
-`libbz2`). NEP's format readers and logging are not dependencies.
+LZ4 and BZIP2 compression for NetCDF-4/HDF5, with C and optional Fortran
+wrappers. This code is being separated from
+[NEP](https://github.com/Intelligent-Data-Design-Inc/NEP) to make compression
+easier to build and use without installing its format readers. NEP remains
+the project for UDF formats and NEXTCDF-4; it still ships its original
+compression APIs during the migration. See the [compression guide](docs/compression.md)
+for API details and file compatibility.
 
-## Local build
+nep-compress **builds an LZ4 HDF5 plugin** (`libh5lz4.so`, filter ID 32004).
+For BZIP2 (ID 307), it builds the C/Fortran API but requires a compatible
+**external HDF5 BZIP2 plugin** for both writing and reading. `libbz2` alone
+is not a plugin. BZIP2 is OFF by default.
 
-For the current local installations:
+## Dependencies
+
+- CMake 3.18+, a C compiler, pkg-config, NetCDF-C 4.10.1+, HDF5 1.14+
+  with C/HL libraries, and liblz4 when LZ4 is enabled.
+- A Fortran compiler and NetCDF-Fortran when `NEPCOMPRESS_ENABLE_FORTRAN=ON`
+  (the default). These must use the same NetCDF-C/HDF5 installation.
+- For BZIP2, an external HDF5 plugin that implements ID 307 with an
+  encoder and decoder; pass its directory to
+  `NEPCOMPRESS_BZIP2_PLUGIN_DIR`. The CMake probe fails rather than
+  silently skipping enabled BZIP2 coverage.
+
+One provider is a matching HDF5 plugin package (for example a
+`hdf5plugin` package installed in the *same* Conda environment as HDF5).
+Its plugin directory can be queried with
+`python -c 'import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)'`.
+Verify it supplies ID 307 using the configure-time probe; plugin
+filenames alone are not proof of compatibility. On the local development
+machine, the external plugin directory is
+`/usr/local/netcdf-c/hdf5/lib/plugin`. Do not mix a system-HDF5 plugin
+with another incompatible HDF5 installation.
+
+## Build and test
+
+Choose a clean `build` directory (do not overwrite an existing build without
+checking its contents). Set `CMAKE_PREFIX_PATH`, `PKG_CONFIG_PATH`, and
+`HDF5_ROOT` for your matching HDF5/NetCDF installations as needed:
+
+```sh
+cmake -S . -B build -DNEPCOMPRESS_BUILD_LZ4=ON \
+  -DNEPCOMPRESS_BUILD_BZIP2=OFF -DNEPCOMPRESS_ENABLE_FORTRAN=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+cmake --install build --prefix "$PWD/build/stage"
+```
+
+For both filters on this machine, use:
 
 ```sh
 export PATH="/usr/local/hdf5-2.1.1/bin:/usr/local/netcdf-c/bin:/usr/local/netcdf-fortran/bin:$PATH"
@@ -18,22 +60,58 @@ cmake -S . -B build \
   -DNEPCOMPRESS_BZIP2_PLUGIN_DIR=/usr/local/netcdf-c/hdf5/lib/plugin
 cmake --build build
 ctest --test-dir build --output-on-failure
-cmake --install build --prefix "$PWD/build/stage"
 ```
 
-LZ4 is ON, BZIP2 is OFF, and Fortran is ON by default. Configure with
-`-DNEPCOMPRESS_ENABLE_FORTRAN=OFF` if NetCDF-Fortran is not installed. Set
-`HDF5_PLUGIN_PATH` to the installed `lib/plugin` directory for LZ4 and to
-the BZIP2 plugin directory when BZIP2 is used. Enabled BZIP2 requires filter
-307 with both encoder and decoder; configure fails if it is missing.
+CTest sets the plugin search path for each test. For installed applications,
+set it yourself to the directories containing the installed LZ4 plugin
+and, if used, the external BZIP2 plugin (colon-separated on Linux):
 
-Include `<nep_compress.h>` and link `libnepcompress`; Fortran clients use
-`use nep_compress` (module installed under `include/nep-compress`) and link
-`libnepcompressf`. Existing `nc_*_var_lz4/bzip2` and
-`nf90_*_var_lz4/bzip2` entry points retain their signatures. This is a
-source/build migration from NEP's `<nep.h>`, `libnep`, and `use nep`.
+```sh
+export HDF5_PLUGIN_PATH="$HOME/nep-compress-install/lib/plugin:/path/to/bzip2/plugin"
+```
 
-For cross-plugin LZ4 file tests, configure
-`NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` with an older plugin directory;
-the default tests exercise this project's plugin alone. The current
-implementation does not bundle or redistribute a BZIP2 plugin.
+Use a single provider for each filter ID in a process. The build-tree
+LZ4 plugin is in `build/plugin`. Test isolation also disables unrelated
+NetCDF `.ncrc` UDF autoload settings. Check `ldd` or your platform's
+equivalent if a custom NetCDF or HDF5 is installed.
+
+| CMake option | Default | Effect |
+| --- | --- | --- |
+| `NEPCOMPRESS_BUILD_LZ4` | ON | Build LZ4 API and plugin |
+| `NEPCOMPRESS_BUILD_BZIP2` | OFF | Build BZIP2 API and require external ID 307 plugin |
+| `NEPCOMPRESS_BZIP2_PLUGIN_DIR` | empty | Directory to probe for BZIP2 when enabled |
+| `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
+| `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
+| `BUILD_TESTING` | ON | Register C, HDF5 and optional Fortran tests |
+| `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` | empty | Run optional read/write tests with an older LZ4 plugin |
+
+## Using the libraries
+
+```c
+#include <nep_compress.h>
+/* After nc_create(NC_NETCDF4), nc_def_dim and nc_def_var: */
+int status = nc_def_var_lz4(ncid, varid, 3);
+/* Or, with BZIP2 enabled and its plugin available: */
+/* status = nc_def_var_bzip2(ncid, varid, 8); */
+```
+
+Link `libnepcompress` alongside NetCDF-C (or use the installed
+`NEPCompress::nepcompress` CMake target). In Fortran, `use netcdf` and
+`use nep_compress`, then call `nf90_def_var_lz4(ncid, varid, 3)` or
+`nf90_def_var_bzip2(ncid, varid, 8)`. Link `libnepcompressf`; CMake
+exports `NEPCompress::nepcompressf`. The module is installed under
+`include/nep-compress`, so add that directory to Fortran's module path.
+
+Former NEP clients switch `<nep.h>` to `<nep_compress.h>`, `-lnep` to
+`-lnepcompress` for compression calls, and `use nep` / `-lnepf` to
+`use nep_compress` / `-lnepcompressf`. Keep linking NEP separately if
+you also use its format libraries. The C/Fortran procedure names, filter
+IDs and file encoding stay the same; this is **not** a promise of
+binary-compatible linkage to the old NEP libraries. Existing compressed
+files need an appropriate HDF5 decoder on the reader's plugin path.
+
+The [LZ4 on-disk format](plugins/LZ4_HDF5_format.md) and
+[optional performance examples](examples/performance/README.md) provide
+additional reference material. NEP's old-writer/new-reader compatibility
+gate remains open until its original build can be tested; plugin-level
+cross-read tests alone do not close that gate.

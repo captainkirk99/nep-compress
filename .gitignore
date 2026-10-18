@@ -1,5 +1,6 @@
 # Prerequisites
 build/
+examples/performance/*.jpg
 *.d
 
 # Object files
