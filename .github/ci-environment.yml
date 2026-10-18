@@ -1,0 +1,15 @@
+name: nep-compress-ci
+channels:
+  - conda-forge
+dependencies:
+  - cmake >=3.18
+  - ninja
+  - pkg-config
+  - c-compiler
+  - fortran-compiler
+  - python
+  - hdf5 >=1.14
+  - libnetcdf >=4.10.1
+  - netcdf-fortran
+  - lz4-c
+  - hdf5plugin

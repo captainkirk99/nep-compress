@@ -1,0 +1,8 @@
+if(NEPCOMPRESS_BUILD_LZ4)
+    add_executable(benchmark_lz4 lz4.c)
+    target_link_libraries(benchmark_lz4 PRIVATE nepcompress m)
+endif()
+if(NEPCOMPRESS_BUILD_BZIP2)
+    add_executable(benchmark_bzip2 bzip2.c)
+    target_link_libraries(benchmark_bzip2 PRIVATE nepcompress m)
+endif()
