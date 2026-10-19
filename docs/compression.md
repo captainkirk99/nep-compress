@@ -77,9 +77,8 @@ keep their source, historical CSV results, plotters and metadata together.
 Run them manually to obtain measurements for your machine; they are not
 part of regular CTest. They do not guarantee specific speedups or ratios.
 
-Files using IDs 32004 and 307 with the existing one-parameter layout
-are the compatibility target. Tests check values and filter metadata
-across new and installed reference LZ4 plugins. The original NEP
-writer/reopen comparison remains unverified because the existing NEP
-build must be safely replaced before its baseline can run; do not
-infer full old-NEP compatibility from a matching filter ID alone.
+nep-compress retains IDs 32004 and 307 with one-parameter filter
+definitions. Tests check its own write/reopen/read values and filter
+metadata, plus optional reference LZ4 plugin checks. Interchange with
+files written through old NEP, in either direction, is not a release
+requirement; matching IDs alone do not establish such compatibility.

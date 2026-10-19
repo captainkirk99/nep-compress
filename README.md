@@ -112,6 +112,5 @@ files need an appropriate HDF5 decoder on the reader's plugin path.
 
 The [LZ4 on-disk format](plugins/LZ4_HDF5_format.md) and
 [optional performance examples](examples/performance/README.md) provide
-additional reference material. NEP's old-writer/new-reader compatibility
-gate remains open until its original build can be tested; plugin-level
-cross-read tests alone do not close that gate.
+additional reference material. Tests cover nep-compress's own files;
+interchange with files written through old NEP is not a release requirement.

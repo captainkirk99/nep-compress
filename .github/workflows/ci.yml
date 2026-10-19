@@ -41,8 +41,10 @@ jobs:
           echo "HDF5 prefix: ${CONDA_PREFIX}"
           nc-config --version
           nf-config --version
-          h5cc -showconfig | head -10
           pkg-config --modversion netcdf hdf5 liblz4
+          if command -v h5cc >/dev/null; then
+            h5cc -showconfig | sed -n '1,10p'
+          fi
           BZIP2_PLUGIN_DIR="$(python -c 'import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)')"
           test -d "${BZIP2_PLUGIN_DIR}"
           echo "External plugin directory: ${BZIP2_PLUGIN_DIR}"
