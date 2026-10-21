@@ -17,6 +17,10 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.1)
+# HDF5 2.x package configs reject a 1.14 minimum-version request even though
+# the installed library is newer. The module finder checks the actual version
+# and honors HDF5_ROOT instead of a stale cached HDF5_DIR.
+set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE TRUE)
 find_package(HDF5 1.14 REQUIRED COMPONENTS C HL)
 
 if(NEPCOMPRESS_BUILD_LZ4)
