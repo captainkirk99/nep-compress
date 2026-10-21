@@ -38,7 +38,11 @@ with another incompatible HDF5 installation.
 
 Choose a clean `build` directory (do not overwrite an existing build without
 checking its contents). Set `CMAKE_PREFIX_PATH`, `PKG_CONFIG_PATH`, and
-`HDF5_ROOT` for your matching HDF5/NetCDF installations as needed:
+`HDF5_ROOT` for your matching HDF5/NetCDF installations as needed. HDF5 is
+located through CMake's module finder so HDF5 2.x installations satisfy the
+1.14 minimum version, even if an older `HDF5_DIR` remains in the build cache.
+When switching HDF5 installations, use a new build directory: other cached
+HDF5 library and include paths may still point at the old installation.
 
 ```sh
 cmake -S . -B build -DNEPCOMPRESS_BUILD_LZ4=ON \
@@ -53,6 +57,7 @@ For both filters on this machine, use:
 ```sh
 export PATH="/usr/local/hdf5-2.1.1/bin:/usr/local/netcdf-c/bin:/usr/local/netcdf-fortran/bin:$PATH"
 export PKG_CONFIG_PATH="/usr/local/netcdf-c/lib/pkgconfig:/usr/local/netcdf-fortran/lib/pkgconfig:$PKG_CONFIG_PATH"
+export LD_LIBRARY_PATH="/usr/local/hdf5-2.1.1/lib:/usr/local/netcdf-c/lib:/usr/local/netcdf-fortran/lib:$LD_LIBRARY_PATH"
 cmake -S . -B build \
   -DCMAKE_PREFIX_PATH="/usr/local/hdf5-2.1.1;/usr/local/netcdf-c;/usr/local/netcdf-fortran" \
   -DHDF5_ROOT=/usr/local/hdf5-2.1.1 \

@@ -1,5 +1,6 @@
 # Prerequisites
 build/
+b/*
 examples/performance/*.jpg
 *.d
 
