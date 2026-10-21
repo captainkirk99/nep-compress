@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(PkgConfig)
+pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.1)
+if(@NEPCOMPRESS_ENABLE_FORTRAN@)
+    pkg_check_modules(NETCDF_FORTRAN REQUIRED IMPORTED_TARGET netcdf-fortran)
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/NEPCompressTargets.cmake")
+check_required_components(NEPCompress)

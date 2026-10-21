@@ -1,0 +1,91 @@
+name: Build and test compression
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  compression:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: lz4-c
+            lz4: "ON"
+            bzip2: "OFF"
+            fortran: "OFF"
+          - name: bzip2-fortran
+            lz4: "OFF"
+            bzip2: "ON"
+            fortran: "ON"
+          - name: both-fortran
+            lz4: "ON"
+            bzip2: "ON"
+            fortran: "ON"
+    name: ${{ matrix.name }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: .github/ci-environment.yml
+          init-shell: bash
+          cache-environment: true
+
+      - name: Check dependency stack and external plugin
+        run: |
+          set -euo pipefail
+          echo "HDF5 prefix: ${CONDA_PREFIX}"
+          nc-config --version
+          nf-config --version
+          pkg-config --modversion netcdf hdf5 liblz4
+          if command -v h5cc >/dev/null; then
+            h5cc -showconfig | sed -n '1,10p'
+          fi
+          BZIP2_PLUGIN_DIR="$(python -c 'import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)')"
+          test -d "${BZIP2_PLUGIN_DIR}"
+          echo "External plugin directory: ${BZIP2_PLUGIN_DIR}"
+          echo "BZIP2_PLUGIN_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
+
+      - name: Configure
+        run: |
+          set -euo pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" -DHDF5_ROOT="${CONDA_PREFIX}" \
+            -DNEPCOMPRESS_BUILD_LZ4=${{ matrix.lz4 }} \
+            -DNEPCOMPRESS_BUILD_BZIP2=${{ matrix.bzip2 }} \
+            -DNEPCOMPRESS_ENABLE_FORTRAN=${{ matrix.fortran }} \
+            -DNEPCOMPRESS_BZIP2_PLUGIN_DIR="${BZIP2_PLUGIN_DIR}" \
+            -DBUILD_TESTING=ON
+          ctest --test-dir build -N | tee build/test-list.txt
+          if [[ "${{ matrix.bzip2 }}" == "ON" ]]; then
+            grep -q 'tst_h_bzip2' build/test-list.txt
+            grep -q 'bzip2_roundtrip' build/test-list.txt
+          else
+            echo "BZIP2 explicitly disabled in this matrix entry"
+            if grep -q 'tst_h_bzip2' build/test-list.txt; then exit 1; fi
+          fi
+          if [[ "${{ matrix.lz4 }}" == "ON" ]]; then
+            grep -q 'tst_h_lz4' build/test-list.txt
+          fi
+
+      - name: Build and test
+        run: |
+          set -euo pipefail
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure --no-tests=error --parallel 2
+
+      - name: Install and build downstream consumer
+        run: |
+          set -euo pipefail
+          cmake --install build --prefix "${PWD}/build/stage"
+          cmake -S test/consumer -B build/consumer/build -G Ninja \
+            -DCMAKE_PREFIX_PATH="${PWD}/build/stage;${CONDA_PREFIX}"
+          cmake --build build/consumer/build
+          build/consumer/build/consumer_c
+          if [[ "${{ matrix.fortran }}" == "ON" ]]; then
+            build/consumer/build/consumer_fortran
+          fi

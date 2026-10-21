@@ -1,0 +1,9 @@
+#ifndef NEPCOMPRESS_LZ4_CONFIG_H
+#define NEPCOMPRESS_LZ4_CONFIG_H
+#define STDC_HEADERS 1
+#define HAVE_STRING_H 1
+#define HAVE_STDINT_H 1
+#define HAVE_INTTYPES_H 1
+#define HAVE_ARPA_INET_H 1
+#define HAVE_NETINET_IN_H 1
+#endif
