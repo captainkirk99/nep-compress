@@ -1,14 +1,13 @@
-/**
- * @file
+/*
  * Header file for test code as part of the NetCDF Community Codec
  * Repository.
  *
- * @author Edward Hartnett, Intelligent Data Design, Inc.
- * @date Nov 13, 2025
- * @copyright Intelligent Data Design, Inc. All rights reserved.
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ * Date: Nov 13, 2025
+ * Copyright: Intelligent Data Design, Inc. All rights reserved.
  */
 #ifndef _NEP_TEST_H
-/** Include guard for nep_test.h. */
+/* Include guard for nep_test.h. */
 #define _NEP_TEST_H
 
 /* #include "config.h" */
@@ -16,10 +15,10 @@
 #include <assert.h>
 #include <stdlib.h>
 
-/** One million. */
+/* One million. */
 #define MILLION 1000000
 
-/**
+/*
  This macro prints an error message with line number and name of
  * test program, and a netCDF error message. */
 #define NCERR(e) do {							\
@@ -31,7 +30,7 @@
         return 2;							\
     } while (0)
 
-/**
+/*
  This macro prints an error message with line number and name of
  * test program. */
 #define ERR do {							\
@@ -43,7 +42,7 @@
         return 2;							\
     } while (0)
 
-/**
+/*
  This macro prints an error message with line number and name of
  * test program. */
 #define ERR2 do {							\
@@ -54,7 +53,7 @@
         return 2;							\
     } while (0)
 
-/**
+/*
  After a set of tests, report the number of errors, and increment
  * total_err. */
 #define SUMMARIZE_ERR do { \
@@ -68,7 +67,7 @@
       printf("ok.\n"); \
 } while (0)
 
-/**
+/*
  This macro prints out our total number of errors, if any, and exits
  * with a 0 if there are not, or a 2 if there were errors. Make will
  * stop if a non-zero value is returned from a test program. */
