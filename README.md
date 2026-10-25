@@ -13,6 +13,27 @@ For BZIP2 (ID 307), it builds the C/Fortran API but requires a compatible
 **external HDF5 BZIP2 plugin** for both writing and reading. `libbz2` alone
 is not a plugin. BZIP2 is OFF by default.
 
+**Documentation:** https://captainkirk99.github.io/nep-compress/
+
+## Books
+
+<table><tr>
+<td><a href="https://www.amazon.com/dp/B0H7Q49MPS"><img src="docs/NDH_cover.jpg" width="200" alt="The NetCDF Developer's Handbook, Second Edition"></a></td>
+<td><a href="https://www.amazon.com/dp/B0HJRZ9F7L"><img src="docs/EOiP_cover.jpg" width="200" alt="Earth Observation in Practice"></a></td>
+</tr></table>
+
+[The NetCDF Developer's Handbook: The Authoritative Guide to Writing
+High-Performance Programs for Scientific Data Management, Second
+Edition](https://www.amazon.com/dp/B0H7Q49MPS) is the complete
+NetCDF-C and NetCDF-Fortran reference, covering compression filters,
+chunking and quantization in depth.
+
+[Earth Observation in Practice: A Mission-by-Mission Guide to Reading
+Satellite Data with NetCDF and
+Python](https://www.amazon.com/dp/B0HJRZ9F7L) is a mission-by-mission
+guide to the spacecraft, instruments and data products of modern remote
+sensing.
+
 ## Dependencies
 
 - CMake 3.18+, a C compiler, pkg-config, NetCDF-C 4.10.1+, HDF5 1.14+
@@ -89,6 +110,21 @@ equivalent if a custom NetCDF or HDF5 is installed.
 | `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
 | `BUILD_TESTING` | ON | Register C, HDF5 and optional Fortran tests |
 | `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` | empty | Run optional read/write tests with an older LZ4 plugin |
+| `NEPCOMPRESS_BUILD_DOCS` | OFF | Add a `docs` target that builds Doxygen HTML documentation |
+
+## Building the documentation
+
+The documentation builds with Doxygen and Graphviz `dot`, with no
+NetCDF, HDF5 or Fortran requirements. Either run the script directly:
+
+```sh
+cmake -DNEPC_OUTPUT_DIR=build/docs -P docs/build_docs.cmake
+```
+
+or configure with `-DNEPCOMPRESS_BUILD_DOCS=ON` and build the `docs`
+target; HTML lands in `build/docs/html`. Set
+`-DNEPCOMPRESS_DOCS_WARN_AS_ERROR=FAIL_ON_WARNINGS` to make
+documentation warnings fatal, as CI does.
 
 ## Using the libraries
 

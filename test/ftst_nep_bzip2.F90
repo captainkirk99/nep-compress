@@ -4,10 +4,15 @@
   !! netCDF. This started as an example nc4_pres_temp_4D_wr.f90 from
   !! the netcdf-fortran project.
   !!
-  !! @author Edward Hartnett
+  !! @author Edward Hartnett, Intelligent Data Design, Inc.
   !! @date Nov 13, 2025
   !! @copyright Intelligent Data Design, Inc. All rights reserved.
 
+!> @brief Test BZIP2 compression from Fortran.
+!>
+!> @return 0 on success.
+!>
+!> @author Edward Hartnett, Intelligent Data Design, Inc.
 program ftst_nep_bzip2
   use netcdf
   use nep_compress
@@ -179,6 +184,11 @@ program ftst_nep_bzip2
 contains
   ! Internal subroutine - checks error status after each netcdf, prints out text message each time
   !   an error code is returned.
+  !> @brief Check a NetCDF error status and stop on error.
+  !>
+  !> @param status NetCDF error code to check.
+  !>
+  !> @author Edward Hartnett, Intelligent Data Design, Inc.
   subroutine check(status)
     integer, intent ( in) :: status
 

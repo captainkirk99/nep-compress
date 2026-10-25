@@ -1,5 +1,15 @@
 # Roadmap
 
+## V1.2.0 Compression Filter for Mereosat
+
+From "Earth Observation in Practice":
+
+EUMETSAT disseminates FCI Level-1c imagery with stronger lossless compression based on the JPEG-LS standard through the CharLS library. JPEG-LS is implemented as a custom HDF5 filter (`H5ZJPEGLS`), not built into standard NetCDF-4 or HDF5 installations. The filename's `special_compression` field identifies these datasets; the product user guide documents which streams and dissemination paths use JPEG-LS.
+
+To read JPEG-LS-compressed FCI NetCDF-4 files you must install the `fcidecomp` decompression software from EUMETSAT. `fcidecomp` supplies the `H5ZJPEGLS` HDF5 filter plugin, which the HDF5 library loads automatically when the file is opened. Once the plugin is installed, reads are transparent: `netCDF4.Dataset()` or `h5py.File()` behave as if the data were uncompressed. Without the plugin, accessing a compressed variable fails because the library does not recognise the filter.
+
+- We need to accomodate this filter in nep-compress.
+
 ## V1.1.0 - Documentation
 
 ### Sprint 1: Documentation
@@ -22,3 +32,4 @@ Need a test which tries all available filters and compares.
 We need some real data to try this on. Take a sizable (10 MB) sample from this data file: 
 Style similar to this program from my book: https://github.com/captainkirk99/NetCDF_Developers_Handbook/blob/main/examples/performance/zstandard.c
 Full doxygen documentation.
+

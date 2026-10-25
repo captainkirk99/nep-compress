@@ -4,6 +4,17 @@
  * HDF5 datasets compressed with lz4.
  */
 
+/**
+ * @file H5Zlz4.c
+ * @brief HDF5 filter plugin for LZ4 compression (filter ID 32004).
+ *
+ * Implements the dynamically loaded HDF5 LZ4 filter used by
+ * nc_def_var_lz4(). The on-disk chunk encoding is described in
+ * @ref md_plugins_2LZ4__HDF5__format "the LZ4 HDF5 format page".
+ *
+ * @author Unknown Programmer
+ */
+
 #include "lz4_config.h"
 #include <stdio.h>
 #ifdef HAVE_SYS_TYPES_H
@@ -55,23 +66,57 @@
 #include "H5PLextern.h"
 #include "lz4.h"
 
+/**
+ * @brief The LZ4 filter callback called by the HDF5 library.
+ *
+ * Runs in both directions: compression (forward) and decompression
+ * (H5Z_FLAG_REVERSE set in @p flags). The buffer is replaced in
+ * place through @p buf / @p buf_size.
+ *
+ * @param flags Filter flags; H5Z_FLAG_REVERSE selects decompression.
+ * @param cd_nelmts Number of filter parameters in @p cd_values.
+ * @param cd_values Filter parameters; the first, when present, is the
+ * LZ4 acceleration level.
+ * @param nbytes Size in bytes of the input data in @p buf.
+ * @param buf_size Size in bytes of the buffer pointed to by @p buf.
+ * @param buf Pointer to the buffer holding the data; on success it is
+ * replaced with the filtered buffer.
+ * @return The size of the filtered data, or 0 on failure.
+ *
+ * @author Unknown Programmer
+ */
 size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[],
                              size_t nbytes, size_t *buf_size, void **buf);
 
+/** LZ4 HDF5 filter ID. */
 #define H5Z_FILTER_LZ4 32004
 
+/** Convert a 64-bit value from host to network byte order. */
 #define htonll(x) (((uint64_t)(htonl((uint32_t)((x << 32) >> 32))) << 32) | htonl(((uint32_t)(x >> 32))))
+/** Convert a 64-bit value from network to host byte order. */
 #define ntohll(x) htonll(x)
 
+/** Convert a 16-bit value from host to big endian byte order. */
 #define htobe16t(x) htons(x)
+/** Convert a 32-bit value from host to big endian byte order. */
 #define htobe32t(x) htonl(x)
+/** Convert a 64-bit value from host to big endian byte order. */
 #define htobe64t(x) htonll(x)
+/** Convert a 16-bit value from big endian to host byte order. */
 #define be16toht(x) ntohs(x)
+/** Convert a 32-bit value from big endian to host byte order. */
 #define be32toht(x) ntohl(x)
+/** Convert a 64-bit value from big endian to host byte order. */
 #define be64toht(x) ntohll(x)
 
+/** Default LZ4 block size (1 GiB); LZ4 needs blocks < 1.97 GiB. */
 #define DEFAULT_BLOCK_SIZE 1 << 30 /* 1GiB. LZ4 needs blocks < 1.97GiB. */
 
+/**
+ * @brief HDF5 filter class structure for the LZ4 filter.
+ *
+ * @author Unknown Programmer
+ */
 const H5Z_class2_t H5Z_LZ4[1] = {{
     H5Z_CLASS_T_VERS,             /* H5Z_class_t version */
     (H5Z_filter_t)H5Z_FILTER_LZ4, /* Filter id number             */
@@ -89,11 +134,26 @@ const H5Z_class2_t H5Z_LZ4[1] = {{
     (H5Z_func_t)H5Z_filter_lz4, /* The actual filter function   */
 }};
 
+/**
+ * @brief Return the plugin type (H5PL_TYPE_FILTER) to the HDF5
+ * library.
+ *
+ * @return H5PL_TYPE_FILTER.
+ *
+ * @author Unknown Programmer
+ */
 H5PL_type_t
 H5PLget_plugin_type(void)
 {
     return H5PL_TYPE_FILTER;
 }
+/**
+ * @brief Return the LZ4 filter class structure to the HDF5 library.
+ *
+ * @return Pointer to H5Z_LZ4.
+ *
+ * @author Unknown Programmer
+ */
 const void *
 H5PLget_plugin_info(void)
 {

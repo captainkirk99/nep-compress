@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(nepcompress VERSION 4.2.0 LANGUAGES C)
+project(nepcompress VERSION 1.1.0 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CTest)
@@ -8,6 +8,9 @@ option(NEPCOMPRESS_BUILD_LZ4 "Build the LZ4 API and HDF5 plugin" ON)
 option(NEPCOMPRESS_BUILD_BZIP2 "Build the BZIP2 API (requires an external HDF5 plugin)" OFF)
 option(NEPCOMPRESS_ENABLE_FORTRAN "Build Fortran compression wrappers" ON)
 option(NEPCOMPRESS_BUILD_BENCHMARKS "Build slow LZ4/BZIP2 performance examples" OFF)
+option(NEPCOMPRESS_BUILD_DOCS "Build Doxygen HTML documentation" OFF)
+set(NEPCOMPRESS_DOCS_WARN_AS_ERROR "NO" CACHE STRING
+    "Doxygen WARN_AS_ERROR value (e.g. FAIL_ON_WARNINGS)")
 set(NEPCOMPRESS_BZIP2_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 307")
 set(NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR "" CACHE PATH "Optional previous LZ4 plugin directory for cross-plugin file tests")
 
@@ -116,4 +119,15 @@ if(BUILD_TESTING)
 endif()
 if(NEPCOMPRESS_BUILD_BENCHMARKS)
     add_subdirectory(examples/performance)
+endif()
+
+if(NEPCOMPRESS_BUILD_DOCS)
+    add_custom_target(docs
+        COMMAND ${CMAKE_COMMAND}
+            -DNEPC_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+            -DNEPC_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/docs
+            -DNEPC_WARN_AS_ERROR=${NEPCOMPRESS_DOCS_WARN_AS_ERROR}
+            -DNEPC_VERSION=${PROJECT_VERSION}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/docs/build_docs.cmake
+        COMMENT "Building Doxygen documentation")
 endif()

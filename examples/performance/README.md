@@ -25,3 +25,5 @@ python3 plot_bzip2.py
 The plotters read the tracked historical CSVs in this directory;
 copy new CSVs into a scratch directory alongside the plotters if
 plotting new measurements. Plotting requires `matplotlib`.
+
+Author: Edward Hartnett, Intelligent Data Design, Inc.

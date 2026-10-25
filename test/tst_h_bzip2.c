@@ -2,7 +2,7 @@
  * @file
  * This test checks the bzip2 filter.
  *
- * @author Edward Hartnett
+ * @author Edward Hartnett, Intelligent Data Design, Inc.
  * @date Nov 13, 2025
  * @copyright Intelligent Data Design, Inc. All rights reserved.
  */
@@ -11,26 +11,40 @@
 #include <hdf5.h>
 #include <H5DSpublic.h>
 
-/* Err is used to keep track of errors within each set of tests,
+/** Err is used to keep track of errors within each set of tests,
  * total_err is the number of errors in the entire test program, which
  * generally cosists of several sets of tests. */
-static int total_err = 0, err = 0;
+static int total_err = 0, err = 0; /**< Errors in this set of tests. */
 
+/** Name of the test NetCDF file. */
 #define FILE_NAME "tst_h_bzip2.h5"
+/** Length of string buffers used for file names. */
 #define STR_LEN 255
+/** Maximum buffer length used in the test. */
 #define MAX_LEN 1024
+/** HDF5 filter ID for the bzip2 filter. */
 #define H5Z_FILTER_BZIP2 307
 
+/** @cond */
 size_t H5Z_filter_bzip2(unsigned int flags, size_t cd_nelmts,
                         const unsigned int cd_values[], size_t nbytes,
                         size_t *buf_size, void **buf);
+/** @endcond */
 
+/**
+ * @brief Run the test program.
+ *
+ * @return 0 on success, 2 if any test failed.
+ *
+ * @author Edward Hartnett, Intelligent Data Design, Inc.
+ */
 int
 main()
 {
    printf("\n*** Checking HDF5 variable functions some more.\n");
    printf("*** Checking HDF5 variable compression and filters...");
    {
+/** @cond */
 #define NUM_ELEMENTS 6
 #define MAX_NAME_LEN 50
 #define ELEMENTS_NAME "Elements"
@@ -40,6 +54,7 @@ main()
 #define NY 120
 #define DEFLATE_LEVEL 3
 #define SIMPLE_VAR_NAME "data"
+/** @endcond */
 
       hid_t fapl_id, fcpl_id;
       hid_t datasetid;
