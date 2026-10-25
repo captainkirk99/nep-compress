@@ -1,10 +1,9 @@
-/**
- * @file
+/*
  * This test checks the bzip2 filter.
  *
- * @author Edward Hartnett
- * @date Nov 13, 2025
- * @copyright Intelligent Data Design, Inc. All rights reserved.
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ * Date: Nov 13, 2025
+ * Copyright: Intelligent Data Design, Inc. All rights reserved.
  */
 
 #include "nep_test.h"
@@ -14,17 +13,29 @@
 /* Err is used to keep track of errors within each set of tests,
  * total_err is the number of errors in the entire test program, which
  * generally cosists of several sets of tests. */
-static int total_err = 0, err = 0;
+static int total_err = 0, err = 0; /* Errors in this set of tests. */
 
+/* Name of the test NetCDF file. */
 #define FILE_NAME "tst_h_bzip2.h5"
+/* Length of string buffers used for file names. */
 #define STR_LEN 255
+/* Maximum buffer length used in the test. */
 #define MAX_LEN 1024
+/* HDF5 filter ID for the bzip2 filter. */
 #define H5Z_FILTER_BZIP2 307
 
+/* External bzip2 filter function under test. */
 size_t H5Z_filter_bzip2(unsigned int flags, size_t cd_nelmts,
                         const unsigned int cd_values[], size_t nbytes,
                         size_t *buf_size, void **buf);
 
+/*
+ * Run the test program.
+ *
+ * Returns 0 on success, 2 if any test failed.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
 int
 main()
 {

@@ -1,13 +1,13 @@
-/**
- * @file
+/*
  * Header file for test code as part of the NetCDF Community Codec
  * Repository.
  *
- * @author Edward Hartnett
- * @date Nov 13, 2025
- * @copyright Intelligent Data Design, Inc. All rights reserved.
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ * Date: Nov 13, 2025
+ * Copyright: Intelligent Data Design, Inc. All rights reserved.
  */
 #ifndef _NEP_TEST_H
+/* Include guard for nep_test.h. */
 #define _NEP_TEST_H
 
 /* #include "config.h" */
@@ -15,9 +15,11 @@
 #include <assert.h>
 #include <stdlib.h>
 
+/* One million. */
 #define MILLION 1000000
 
-/* This macro prints an error message with line number and name of
+/*
+ This macro prints an error message with line number and name of
  * test program, and a netCDF error message. */
 #define NCERR(e) do {							\
         fflush(stdout); /* Make sure our stdout is synced with stderr. */ \
@@ -28,7 +30,8 @@
         return 2;							\
     } while (0)
 
-/* This macro prints an error message with line number and name of
+/*
+ This macro prints an error message with line number and name of
  * test program. */
 #define ERR do {							\
         fflush(stdout); /* Make sure our stdout is synced with stderr. */ \
@@ -39,7 +42,8 @@
         return 2;							\
     } while (0)
 
-/* This macro prints an error message with line number and name of
+/*
+ This macro prints an error message with line number and name of
  * test program. */
 #define ERR2 do {							\
         fflush(stdout); /* Make sure our stdout is synced with stderr. */ \
@@ -49,7 +53,8 @@
         return 2;							\
     } while (0)
 
-/* After a set of tests, report the number of errors, and increment
+/*
+ After a set of tests, report the number of errors, and increment
  * total_err. */
 #define SUMMARIZE_ERR do { \
    if (err) \
@@ -62,7 +67,8 @@
       printf("ok.\n"); \
 } while (0)
 
-/* This macro prints out our total number of errors, if any, and exits
+/*
+ This macro prints out our total number of errors, if any, and exits
  * with a 0 if there are not, or a 2 if there were errors. Make will
  * stop if a non-zero value is returned from a test program. */
 #define FINAL_RESULTS do { \

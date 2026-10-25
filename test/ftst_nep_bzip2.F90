@@ -1,13 +1,15 @@
-  !> @file
-  !!
-  !! This is a test program for the NEP BZIP2 compression filter for
-  !! netCDF. This started as an example nc4_pres_temp_4D_wr.f90 from
-  !! the netcdf-fortran project.
-  !!
-  !! @author Edward Hartnett
-  !! @date Nov 13, 2025
-  !! @copyright Intelligent Data Design, Inc. All rights reserved.
+  !
+  ! This is a test program for the NEP BZIP2 compression filter for
+  ! netCDF. This started as an example nc4_pres_temp_4D_wr.f90 from
+  ! the netcdf-fortran project.
+  !
+  ! Author: Edward Hartnett, Intelligent Data Design, Inc.
+  ! Date: Nov 13, 2025
+  ! Copyright: Intelligent Data Design, Inc. All rights reserved.
 
+! Test BZIP2 compression from Fortran.
+!
+! Author: Edward Hartnett, Intelligent Data Design, Inc.
 program ftst_nep_bzip2
   use netcdf
   use nep_compress
@@ -179,6 +181,11 @@ program ftst_nep_bzip2
 contains
   ! Internal subroutine - checks error status after each netcdf, prints out text message each time
   !   an error code is returned.
+  ! Check a NetCDF error status and stop on error.
+  !
+  ! status - NetCDF error code to check.
+  !
+  ! Author: Edward Hartnett, Intelligent Data Design, Inc.
   subroutine check(status)
     integer, intent ( in) :: status
 

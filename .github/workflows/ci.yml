@@ -89,3 +89,21 @@ jobs:
           if [[ "${{ matrix.fortran }}" == "ON" ]]; then
             build/consumer/build/consumer_fortran
           fi
+
+  docs:
+    runs-on: ubuntu-latest
+    name: docs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Doxygen and Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Build documentation
+        run: |
+          set -euo pipefail
+          cmake -DNEPC_OUTPUT_DIR=build/docs \
+            -DNEPC_WARN_AS_ERROR=FAIL_ON_WARNINGS \
+            -P docs/build_docs.cmake

@@ -1,10 +1,9 @@
-/**
- * @file
+/*
  * Test LZ4 compression.
  *
- * @author Edward Hartnett
- * @date Nov 13, 2025
- * @copyright Intelligent Data Design, Inc. All rights reserved.
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ * Date: Nov 13, 2025
+ * Copyright: Intelligent Data Design, Inc. All rights reserved.
  */
 
 #include "nep_compress.h"
@@ -13,33 +12,59 @@
 #include <H5DSpublic.h>
 #include <netcdf.h>
 
+/* Name of the test NetCDF file. */
 #define FILE_NAME "tst_lz4.nc"
+/* Name of this test program, used to build file names. */
 #define TEST "tst_lz4"
+/* Length of string buffers used for file names. */
 #define STR_LEN 255
+/* Maximum buffer length used in the test. */
 #define MAX_LEN 1024
+/* Name of the X dimension. */
 #define X_NAME "X"
+/* Name of the Y dimension. */
 #define Y_NAME "Y"
+/* Rank (2) of the test variable. */
 #define NDIM2 2
+/* Number of elements in a small test array. */
 #define NUM_ELEMENTS 6
+/* Maximum length of names used in the test. */
 #define MAX_NAME_LEN 50
+/* Name of the elements attribute. */
 #define ELEMENTS_NAME "Elements"
+/* Name of the test variable. */
 #define VAR_NAME "Wacky_Woolies"
+/* Number of dimensions in the test variable. */
 #define NDIMS 2
+/* Size of the X dimension of the test variable. */
 #define NX 60
+/* Size of the Y dimension of the test variable. */
 #define NY 120
+/* Deflate level used for comparisons. */
 #define DEFLATE_LEVEL 3
+/* Name of the simple test dataset. */
 #define SIMPLE_VAR_NAME "data"
 
+/* Number of test files. */
 #define NFILE 2
 
+/* Size of the X dimension of the large test variable. */
 #define NX_BIG 100
+/* Size of the Y dimension of the large test variable. */
 #define NY_BIG 100
 
 /* Err is used to keep track of errors within each set of tests,
  * total_err is the number of errors in the entire test program, which
  * generally cosists of several sets of tests. */
-static int total_err = 0, err = 0;
+static int total_err = 0, err = 0; /* Errors in this set of tests. */
 
+/*
+ * Run the test program.
+ *
+ * Returns 0 on success, 2 if any test failed.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
 int
 main()
 {

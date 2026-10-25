@@ -1,3 +1,9 @@
+/**
+ * @file nep_compress.c
+ * @brief Implementation of the nep-compress LZ4 and BZIP2 filter API.
+ *
+ * @author Edward Hartnett, Intelligent Data Design, Inc.
+ */
 #include "nep_compress.h"
 
 #include <hdf5.h>
@@ -5,6 +11,27 @@
 #include <stdlib.h>
 
 #if defined(NEPCOMPRESS_BUILD_LZ4) || defined(NEPCOMPRESS_BUILD_BZIP2)
+/**
+ * @brief Shared implementation of the nc_def_var_*() filter functions.
+ *
+ * Validates the level, checks that the HDF5 filter plugin is
+ * available, then registers the filter on the variable through
+ * nc_def_var_filter() with the level as its single parameter.
+ *
+ * @param ncid NetCDF file ID.
+ * @param varid Variable ID.
+ * @param level Compression level, 1 to 9.
+ * @param id HDF5 filter ID to register.
+ * @param name Filter name used in the message printed when the plugin
+ * is unavailable.
+ * @return NC_NOERR on success, NC_EINVAL for an invalid level,
+ * NC_EFILTER if the filter plugin is unavailable, or another NetCDF
+ * error code.
+ *
+ * @author Edward Hartnett, Intelligent Data Design, Inc.
+ *
+ * @internal
+ */
 static int
 define_filter(int ncid, int varid, int level, unsigned int id, const char *name)
 {

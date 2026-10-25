@@ -1,10 +1,9 @@
-/**
- * @file
+/*
  * This is a test for the LZ4 filter.
  *
- * @author Edward Hartnett
- * @date Nov 13, 2025
- * @copyright Intelligent Data Design, Inc. All rights reserved.
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ * Date: Nov 13, 2025
+ * Copyright: Intelligent Data Design, Inc. All rights reserved.
  */
 
 #include "nep_test.h"
@@ -12,27 +11,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Name of this test program, used to build file names. */
 #define TEST "tst_lz4_size"
+/* Name of the test HDF5 dataset. */
 #define DATASET "Spock"
+/* Size of the first dataset dimension. */
 #define DIM0 320
+/* Size of the second dataset dimension. */
 #define DIM1 640
+/* Chunk size along the first dimension. */
 #define CHUNK0 40
+/* Chunk size along the second dimension. */
 #define CHUNK1 80
+/* HDF5 filter ID for the LZ4 filter. */
 #define H5Z_FILTER_LZ4 32004
+/* Rank (2) of the test variable. */
 #define NDIM2 2
+/* Number of parameters passed to the filter. */
 #define NPARAM 1
+/* Number of test files. */
 #define NFILE 2
+/* Maximum filter name buffer length. */
 #define MAX_NAME 80
 
 /* Err is used to keep track of errors within each set of tests,
  * total_err is the number of errors in the entire test program, which
  * generally cosists of several sets of tests. */
-static int total_err = 0, err = 0;
+static int total_err = 0, err = 0; /* Errors in this set of tests. */
 
+/* External LZ4 filter function under test. */
 size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
                       const unsigned int cd_values[], size_t nbytes,
                       size_t *buf_size, void **buf);
 
+/*
+ * Run the test program.
+ *
+ * Returns 0 on success, 2 if any test failed.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
 int
 main (void)
 {

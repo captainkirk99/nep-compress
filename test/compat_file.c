@@ -1,11 +1,31 @@
+/*
+ * Write or verify a small compressed file for cross-plugin
+ * compatibility tests.
+ *
+ * Used by compat_roundtrip.cmake to check that files written with one
+ * plugin provider can be read with another, and that a missing plugin
+ * yields NC_EFILTER.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
 #include "nep_compress.h"
 
 #include <netcdf.h>
 #include <stdio.h>
 #include <string.h>
 
+/* Number of elements in the test variable. */
 #define COUNT 64
 
+/*
+ * Print a NetCDF error message for a failed operation.
+ *
+ * status - NetCDF error code.
+ * operation - Name of the operation that failed.
+ * Returns 1, for use as a process exit code.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
 static int
 fail(int status, const char *operation)
 {
@@ -13,6 +33,16 @@ fail(int status, const char *operation)
     return 1;
 }
 
+/*
+ * Run the compatibility helper.
+ *
+ * argc - Argument count.
+ * argv - Arguments: write|read|missing, path, lz4|bzip2.
+ * Returns 0 on success, 1 on data or metadata mismatch, 2 on usage
+ * error.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
 int
 main(int argc, char **argv)
 {

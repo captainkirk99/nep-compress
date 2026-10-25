@@ -4,7 +4,7 @@ nep-compress provides lossless LZ4 and BZIP2 filter APIs for chunked
 NetCDF-4/HDF5 variables. HDF5 stores the filter ID and parameters in
 each variable's filter pipeline; the corresponding plugin must be
 available to decode existing compressed data, even if the application
-never calls the nep-compress API. See the [README](../README.md) for
+never calls the nep-compress API. See the [README](https://github.com/captainkirk99/nep-compress/blob/main/README.md) for
 installation, dependencies and a BZIP2 plugin provider.
 
 ## LZ4: prioritize speed
@@ -72,7 +72,7 @@ file is not automatically readable without a decoder.
 
 ## Benchmarks and compatibility
 
-The [LZ4 and BZIP2 performance examples](../examples/performance/README.md)
+The [LZ4 and BZIP2 performance examples](https://github.com/captainkirk99/nep-compress/blob/main/examples/performance/README.md)
 keep their source, historical CSV results, plotters and metadata together.
 Run them manually to obtain measurements for your machine; they are not
 part of regular CTest. They do not guarantee specific speedups or ratios.
@@ -82,3 +82,5 @@ definitions. Tests check its own write/reopen/read values and filter
 metadata, plus optional reference LZ4 plugin checks. Interchange with
 files written through old NEP, in either direction, is not a release
 requirement; matching IDs alone do not establish such compatibility.
+
+Author: Edward Hartnett, Intelligent Data Design, Inc.

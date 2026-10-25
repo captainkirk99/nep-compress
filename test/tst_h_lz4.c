@@ -1,29 +1,39 @@
-/**
- * @file
+/*
  * This test checks the LZ4 filter.
  *
- * @author Edward Hartnett
- * @date Nov 13, 2025
- * @copyright Intelligent Data Design, Inc. All rights reserved.
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ * Date: Nov 13, 2025
+ * Copyright: Intelligent Data Design, Inc. All rights reserved.
  */
 
 #include "nep_test.h"
 #include <hdf5.h>
 #include <H5DSpublic.h>
 
+/* Name of the test NetCDF file. */
 #define FILE_NAME "tst_h_lz4.h5"
+/* Length of string buffers used for file names. */
 #define STR_LEN 255
+/* Maximum buffer length used in the test. */
 #define MAX_LEN 1024
 
 /* Err is used to keep track of errors within each set of tests,
  * total_err is the number of errors in the entire test program, which
  * generally cosists of several sets of tests. */
-static int total_err = 0, err = 0;
+static int total_err = 0, err = 0; /* Errors in this set of tests. */
 
+/* External LZ4 filter function under test. */
 size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
                       const unsigned int cd_values[], size_t nbytes,
                       size_t *buf_size, void **buf);
 
+/*
+ * Run the test program.
+ *
+ * Returns 0 on success, 2 if any test failed.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
 int
 main()
 {

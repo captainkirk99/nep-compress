@@ -82,7 +82,7 @@
  *
  * @note Companion code for "The NetCDF Developer's Handbook: The Authoritative Guide to Writing
  * High-Performance Programs for Scientific Data Management, Second Edition"
- * (https://www.amazon.com/dp/B0H7Q1Z75L)
+ * (https://www.amazon.com/dp/B0H7Q49MPS)
  *
  * @author Edward Hartnett, Intelligent Data Design, Inc.
  */
@@ -108,7 +108,9 @@
 
 /** Chunk shape: matches all v1.10.0 performance examples for consistency. */
 #define CHUNK_Z 10
+/** Chunk size along the Y dimension. */
 #define CHUNK_Y 45
+/** Chunk size along the X dimension. */
 #define CHUNK_X 90
 
 /** Total number of float values in the dataset. */
@@ -117,16 +119,21 @@
 /** Uncompressed size in bytes. */
 #define UNCOMPRESSED_BYTES ((double)NVALS * sizeof(float))
 
+/** Exit code used when a NetCDF call fails. */
 #define ERRCODE 2
+/** Print a NetCDF error message and exit with ERRCODE. */
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
 
 /** Minimum and maximum BZIP2 levels. */
 #define MIN_LEVEL 1
+/** Maximum compression level tested. */
 #define MAX_LEVEL 9
 
 /**
  * @brief Return current wall-clock time in seconds.
  * @return Seconds since the epoch as a double.
+ *
+ * @author Edward Hartnett, Intelligent Data Design, Inc.
  */
 static double
 get_time(void)
@@ -152,6 +159,8 @@ get_time(void)
  * @param level      BZIP2 compression level (1 to 9).
  * @param shuffle    1 to enable the shuffle filter, 0 to disable.
  * @return 0 on success, 1 on any error.
+ *
+ * @author Edward Hartnett, Intelligent Data Design, Inc.
  */
 static int
 run_one(float *data, int level, int shuffle)
@@ -233,6 +242,8 @@ run_one(float *data, int level, int shuffle)
  * total), printing one CSV row per combination.
  *
  * @return 0 on success, 1 on any error.
+ *
+ * @author Edward Hartnett, Intelligent Data Design, Inc.
  */
 int
 main(void)
