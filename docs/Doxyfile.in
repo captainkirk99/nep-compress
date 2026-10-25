@@ -1,0 +1,30 @@
+PROJECT_NAME           = "nep-compress"
+PROJECT_NUMBER         = @NEPC_VERSION@
+PROJECT_BRIEF          = "LZ4 and BZIP2 compression filters for NetCDF-4/HDF5"
+OUTPUT_DIRECTORY       = @NEPC_OUTPUT_DIR@
+INPUT                  = @NEPC_SOURCE_DIR@/docs/mainpage.md \
+                         @NEPC_SOURCE_DIR@/docs/compression.md \
+                         @NEPC_SOURCE_DIR@/plugins/LZ4_HDF5_format.md \
+                         @NEPC_SOURCE_DIR@/include \
+                         @NEPC_SOURCE_DIR@/src \
+                         @NEPC_SOURCE_DIR@/fsrc \
+                         @NEPC_SOURCE_DIR@/plugins \
+                         @NEPC_SOURCE_DIR@/test \
+                         @NEPC_SOURCE_DIR@/examples/performance
+FILE_PATTERNS          = *.h *.c *.F90 *.f90 *.md
+EXTENSION_MAPPING      = F90=FortranFree f90=FortranFree
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */build/* */README.md
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+PREDEFINED             = NEPCOMPRESS_BUILD_LZ4 NEPCOMPRESS_BUILD_BZIP2
+IMAGE_PATH             = @NEPC_SOURCE_DIR@/docs
+HTML_EXTRA_FILES       = @NEPC_SOURCE_DIR@/docs/NDH_cover.jpg \
+                         @NEPC_SOURCE_DIR@/docs/EOiP_cover.jpg
+EXTRACT_STATIC         = YES
+EXTRACT_ALL            = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = YES
+WARN_AS_ERROR          = @NEPC_WARN_AS_ERROR@
+GENERATE_LATEX         = NO
+HAVE_DOT               = YES
