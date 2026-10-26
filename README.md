@@ -50,10 +50,21 @@ One provider is a matching HDF5 plugin package (for example a
 Its plugin directory can be queried with
 `python -c 'import hdf5plugin; print(hdf5plugin.PLUGINS_PATH)'`.
 Verify it supplies ID 307 using the configure-time probe; plugin
-filenames alone are not proof of compatibility. On the local development
-machine, the external plugin directory is
-`/usr/local/netcdf-c/hdf5/lib/plugin`. Do not mix a system-HDF5 plugin
-with another incompatible HDF5 installation.
+filenames alone are not proof of compatibility. Do not mix a system-HDF5
+plugin with another incompatible HDF5 installation.
+
+The BZIP2 plugin directory must contain exactly one provider of filter
+ID 307, and no provider of filter ID 32004 (LZ4). On the local
+development machine `/usr/local/netcdf-c/hdf5/lib/plugin` has two ID
+307 providers and an ID 32004 provider, so create an isolated directory
+instead:
+
+```sh
+mkdir -p "$HOME/plugins/bzip2-only"
+ln -sf /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5bzip2.so "$HOME/plugins/bzip2-only/"
+```
+
+and pass `-DNEPCOMPRESS_BZIP2_PLUGIN_DIR=$HOME/plugins/bzip2-only`.
 
 ## Build and test
 
@@ -83,7 +94,7 @@ cmake -S . -B build \
   -DCMAKE_PREFIX_PATH="/usr/local/hdf5-2.1.1;/usr/local/netcdf-c;/usr/local/netcdf-fortran" \
   -DHDF5_ROOT=/usr/local/hdf5-2.1.1 \
   -DNEPCOMPRESS_BUILD_BZIP2=ON \
-  -DNEPCOMPRESS_BZIP2_PLUGIN_DIR=/usr/local/netcdf-c/hdf5/lib/plugin
+  -DNEPCOMPRESS_BZIP2_PLUGIN_DIR=$HOME/plugins/bzip2-only
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
@@ -104,7 +115,7 @@ equivalent if a custom NetCDF or HDF5 is installed.
 | CMake option | Default | Effect |
 | --- | --- | --- |
 | `NEPCOMPRESS_BUILD_LZ4` | ON | Build LZ4 API and plugin |
-| `NEPCOMPRESS_BUILD_BZIP2` | OFF | Build BZIP2 API and require external ID 307 plugin |
+| `NEPCOMPRESS_BUILD_BZIP2` | OFF | Build the Fortran BZIP2 API and tests (uses NetCDF-C's nc_def_var_bzip2; requires an external HDF5 plugin) |
 | `NEPCOMPRESS_BZIP2_PLUGIN_DIR` | empty | Directory to probe for BZIP2 when enabled |
 | `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
 | `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
@@ -132,11 +143,13 @@ documentation warnings fatal, as CI does.
 #include <nep_compress.h>
 /* After nc_create(NC_NETCDF4), nc_def_dim and nc_def_var: */
 int status = nc_def_var_lz4(ncid, varid, 3);
-/* Or, with BZIP2 enabled and its plugin available: */
+/* Or, with BZIP2's plugin available, via NetCDF-C's function: */
 /* status = nc_def_var_bzip2(ncid, varid, 8); */
 ```
 
-Link `libnepcompress` alongside NetCDF-C (or use the installed
+The bzip2 C calls (`nc_def_var_bzip2`, `nc_inq_var_bzip2`) come from
+NetCDF-C, not from `libnepcompress`. Link `libnepcompress` alongside
+NetCDF-C (or use the installed
 `NEPCompress::nepcompress` CMake target). In Fortran, `use netcdf` and
 `use nep_compress`, then call `nf90_def_var_lz4(ncid, varid, 3)` or
 `nf90_def_var_bzip2(ncid, varid, 8)`. Link `libnepcompressf`; CMake

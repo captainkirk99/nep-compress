@@ -9,17 +9,18 @@ to make compression easier to build and use without installing NEP's
 format readers. NEP remains the project for UDF formats and NEXTCDF-4.
 
 nep-compress builds the LZ4 HDF5 plugin (`libh5lz4`, filter ID 32004)
-itself. For BZIP2 (filter ID 307) it builds the C and Fortran API but
+itself. For BZIP2 (filter ID 307) it builds the Fortran API but
 requires an external HDF5 plugin that provides ID 307 for both writing
-and reading.
+and reading; the C functions are NetCDF-C's own.
 
 # Provided filters
 
 The C API is declared in nep_compress.h:
 
 - nc_def_var_lz4(), nc_inq_var_lz4() — LZ4, filter ID 32004 (#LZ4_ID).
-- nc_def_var_bzip2(), nc_inq_var_bzip2() — BZIP2, filter ID 307
-  (#BZIP2_ID).
+- `nc_def_var_bzip2`, `nc_inq_var_bzip2` — BZIP2, filter ID 307
+  (#BZIP2_ID); these are NetCDF-C's functions, declared in
+  `netcdf_filter.h`.
 
 The Fortran module `nep_compress` provides the equivalents
 nf90_def_var_lz4(), nf90_inq_var_lz4(), nf90_def_var_bzip2(), and
@@ -40,7 +41,7 @@ chunked storage. The filters available to NetCDF-4 users:
 | deflate (zlib) | 1 | Built into HDF5 | No | `nc_def_var_deflate(ncid, varid, shuffle, deflate, level)` | level 1-9 (0 = no compression); the same call's shuffle argument controls shuffle | Balance of speed and ratio; universally readable | Yes |
 | szip | 4 | HDF5 built with libaec/szip | No (when HDF5 has szip) | `nc_def_var_szip(ncid, varid, options_mask, pixels_per_block)` | `NC_SZIP_NN` or `NC_SZIP_EC`; pixels_per_block even and <= 32 | Good on integer/telemetry-like data; cannot be combined with deflate | Yes |
 | zstandard | 32015 | NetCDF-C plugin `lib__nch5zstd` | Yes | `nc_def_var_zstandard(ncid, varid, level)` | levels -131072 to 22 | Wide range from fast to high ratio | Yes |
-| bzip2 | 307 | External HDF5 plugin (NetCDF-C ships `lib__nch5bzip2`; other providers exist) | Yes | `nc_def_var_bzip2(ncid, varid, level)` | level 1-9 (block size 100-900 KB) | Favors ratio over speed | Yes |
+| bzip2 | 307 | External HDF5 plugin (NetCDF-C ships `lib__nch5bzip2`; other providers exist) | Yes | `nc_def_var_bzip2(ncid, varid, level)` (NetCDF-C) | level 1-9 (block size 100-900 KB) | Favors ratio over speed | Yes |
 | LZ4 | 32004 | nep-compress plugin `libh5lz4` | Yes | `nc_def_var_lz4(ncid, varid, level)` | level 1-9 (acceleration parameter) | Favors speed | Yes |
 
 Note that `nc_def_var_zstandard()` does nothing when NetCDF-C was built

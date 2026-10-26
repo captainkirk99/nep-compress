@@ -8,6 +8,7 @@
 
 #include "nep_compress.h"
 #include "nep_test.h"
+#include "lz4_provider.h"
 #include <hdf5.h>
 #include <H5DSpublic.h>
 #include <netcdf.h>
@@ -104,6 +105,9 @@ main()
 
         /* Set up compression. */
         if (nc_def_var_lz4(ncid, varid, 3)) ERR;
+
+        /* The build-tree plugin must be the loaded LZ4 provider. */
+        if (nep_check_lz4_provider(NEP_LZ4_PLUGIN_DIR)) ERR;
 
         /* Check setting. */
         if (nc_inq_var_lz4(ncid, varid, &lz4, &level_in)) ERR;

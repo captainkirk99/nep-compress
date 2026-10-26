@@ -1,5 +1,5 @@
 /*
- * Test the bzip2 compression in nep.
+ * Test the bzip2 compression through NetCDF-C's bzip2 API.
  *
  * Author: Edward Hartnett, Intelligent Data Design, Inc.
  * Date: Nov 13, 2025
@@ -117,6 +117,67 @@ main()
 
             /* Now reopen the file and check. */
             if (nc_open(FILE_NAME, NC_NETCDF4, &ncid)) ERR;
+
+            /* Check setting. */
+            if (nc_inq_var_bzip2(ncid, varid, &bzip2, &level_in)) ERR;
+            if (!bzip2 || level_in != 8) ERR;
+
+            /* Read the data. */
+            if (nc_get_var(ncid, varid, data_in)) ERR;
+
+            /* Check the data. */
+            for (x = 0; x < NX; x++)
+               for (y = 0; y < NY; y++)
+                  if (data_in[x][y] != data_out[x][y]) ERR;
+
+            /* Close the file. */
+            if (nc_close(ncid)) ERR;
+        }
+    }
+    SUMMARIZE_ERR;
+    printf("*** Checking bzip2 filter after shuffle...");
+    {
+        int ncid;
+        int dimid[NDIM2];
+        int varid;
+        int data_out[NX][NY];
+        int x, y;
+        int level_in, bzip2;
+
+        /* Create some data to write. */
+        for (x = 0; x < NX; x++)
+            for (y = 0; y < NY; y++)
+                data_out[x][y] = x * NY + y;
+
+        /* Create file. */
+        if (nc_create("tst_bzip2_shuffle.nc", NC_NETCDF4, &ncid)) ERR;
+
+        /* Create dims. */
+        if (nc_def_dim(ncid, X_NAME, NX, &dimid[0])) ERR;
+        if (nc_def_dim(ncid, Y_NAME, NY, &dimid[1])) ERR;
+
+        /* Create the variable. */
+        if (nc_def_var(ncid, VAR_NAME, NC_INT, NDIM2, dimid, &varid)) ERR;
+
+        /* Turn on shuffle and set up compression. */
+        if (nc_def_var_deflate(ncid, varid, 1, 0, 0)) ERR;
+        if (nc_def_var_bzip2(ncid, varid, 8)) ERR;
+
+        /* Check setting; bzip2 is found behind the shuffle. */
+        if (nc_inq_var_bzip2(ncid, varid, &bzip2, &level_in)) ERR;
+        if (!bzip2 || level_in != 8) ERR;
+
+        /* Write the data. */
+        if (nc_put_var(ncid, varid, data_out)) ERR;
+
+        /* Close the file. */
+        if (nc_close(ncid)) ERR;
+
+        {
+            int data_in[NX][NY];
+
+            /* Now reopen the file and check. */
+            if (nc_open("tst_bzip2_shuffle.nc", NC_NETCDF4, &ncid)) ERR;
 
             /* Check setting. */
             if (nc_inq_var_bzip2(ncid, varid, &bzip2, &level_in)) ERR;

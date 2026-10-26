@@ -4,7 +4,7 @@
  *
  * Used by compat_roundtrip.cmake to check that files written with one
  * plugin provider can be read with another, and that a missing plugin
- * yields NC_EFILTER.
+ * yields NC_ENOFILTER.
  *
  * Author: Edward Hartnett, Intelligent Data Design, Inc.
  */
@@ -48,7 +48,7 @@ main(int argc, char **argv)
 {
     int ncid, varid, dimid, storage, values[COUNT], actual[COUNT], status, i;
     unsigned int id, param;
-    size_t nparams = 1, chunk;
+    size_t nfilters, nparams, chunk;
     const int lz4 = argc == 4 && strcmp(argv[3], "lz4") == 0;
     const int bzip2 = argc == 4 && strcmp(argv[3], "bzip2") == 0;
     const unsigned int expected_id = lz4 ? LZ4_ID : BZIP2_ID;
@@ -86,7 +86,7 @@ main(int argc, char **argv)
         if (strcmp(argv[1], "missing") == 0)
         {
             nc_close(ncid);
-            return status == NC_EFILTER ? 0 : fail(status, "expected NC_EFILTER");
+            return status == NC_ENOFILTER ? 0 : fail(status, "expected NC_ENOFILTER");
         }
         if (status)
             return fail(status, "filter");
@@ -108,11 +108,32 @@ main(int argc, char **argv)
             fprintf(stderr, "unexpected chunking: %d %zu\n", storage, chunk);
             return 1;
         }
-        if ((status = nc_inq_var_filter(ncid, varid, &id, &nparams, &param)))
-            return fail(status, "filter info");
-        if (id != expected_id || nparams != 1 || param != (unsigned int)level)
+        if ((status = nc_inq_var_filter_ids(ncid, varid, &nfilters, NULL)))
+            return fail(status, "filter count");
+        if (nfilters != 1)
         {
-            fprintf(stderr, "unexpected filter ID/parameters: %u %zu %u\n", id, nparams, param);
+            fprintf(stderr, "unexpected filter count: %zu\n", nfilters);
+            return 1;
+        }
+        if ((status = nc_inq_var_filter_ids(ncid, varid, &nfilters, &id)))
+            return fail(status, "filter IDs");
+        if (id != expected_id)
+        {
+            fprintf(stderr, "unexpected filter IDs: %zu %u\n", nfilters, id);
+            return 1;
+        }
+        if ((status = nc_inq_var_filter_info(ncid, varid, id, &nparams, NULL)))
+            return fail(status, "filter info");
+        if (nparams != 1)
+        {
+            fprintf(stderr, "unexpected filter parameter count: %zu\n", nparams);
+            return 1;
+        }
+        if ((status = nc_inq_var_filter_info(ncid, varid, id, &nparams, &param)))
+            return fail(status, "filter info");
+        if (param != (unsigned int)level)
+        {
+            fprintf(stderr, "unexpected filter parameter: %u\n", param);
             return 1;
         }
         if ((status = nc_get_var_int(ncid, varid, actual)))

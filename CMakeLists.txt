@@ -5,7 +5,7 @@ include(GNUInstallDirs)
 include(CTest)
 
 option(NEPCOMPRESS_BUILD_LZ4 "Build the LZ4 API and HDF5 plugin" ON)
-option(NEPCOMPRESS_BUILD_BZIP2 "Build the BZIP2 API (requires an external HDF5 plugin)" OFF)
+option(NEPCOMPRESS_BUILD_BZIP2 "Build the Fortran BZIP2 API and tests (uses NetCDF-C's nc_def_var_bzip2; requires an external HDF5 plugin)" OFF)
 option(NEPCOMPRESS_ENABLE_FORTRAN "Build Fortran compression wrappers" ON)
 option(NEPCOMPRESS_BUILD_BENCHMARKS "Build slow LZ4/BZIP2 performance examples" OFF)
 option(NEPCOMPRESS_BUILD_DOCS "Build Doxygen HTML documentation" OFF)
@@ -61,13 +61,11 @@ endif()
 add_library(nepcompress SHARED src/nep_compress.c)
 add_library(NEPCompress::nepcompress ALIAS nepcompress)
 target_compile_definitions(nepcompress PRIVATE
-    $<$<BOOL:${NEPCOMPRESS_BUILD_LZ4}>:NEPCOMPRESS_BUILD_LZ4>
-    $<$<BOOL:${NEPCOMPRESS_BUILD_BZIP2}>:NEPCOMPRESS_BUILD_BZIP2>)
+    $<$<BOOL:${NEPCOMPRESS_BUILD_LZ4}>:NEPCOMPRESS_BUILD_LZ4>)
 target_include_directories(nepcompress PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-target_include_directories(nepcompress PRIVATE ${HDF5_INCLUDE_DIRS})
-target_link_libraries(nepcompress PUBLIC PkgConfig::NETCDF PRIVATE ${HDF5_LIBRARIES})
+target_link_libraries(nepcompress PUBLIC PkgConfig::NETCDF)
 set_target_properties(nepcompress PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
 install(TARGETS nepcompress EXPORT NEPCompressTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES include/nep_compress.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -96,7 +94,7 @@ if(NEPCOMPRESS_ENABLE_FORTRAN)
     target_include_directories(nepcompressf PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/modules>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nep-compress>)
-    target_link_libraries(nepcompressf PUBLIC nepcompress PkgConfig::NETCDF_FORTRAN)
+    target_link_libraries(nepcompressf PUBLIC nepcompress PkgConfig::NETCDF PkgConfig::NETCDF_FORTRAN)
     install(TARGETS nepcompressf EXPORT NEPCompressTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/modules/nep_compress.mod"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/nep-compress")
