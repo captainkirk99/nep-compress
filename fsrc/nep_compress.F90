@@ -7,7 +7,8 @@
 !> @brief Fortran module for LZ4 and BZIP2 compression of NetCDF-4
 !> variables.
 !>
-!> These wrappers call the C functions in nep_compress.h. As usual in
+!> These wrappers call the C functions declared in nep_compress.h and
+!> netcdf_filter.h. As usual in
 !> the NetCDF Fortran API, @c varid is 1-based; the wrappers subtract 1
 !> before calling the C API.
 !>
@@ -59,9 +60,10 @@ contains
   !> @param ncid NetCDF file ID.
   !> @param varid Variable ID (1-based, as in the NetCDF Fortran API).
   !> @param level LZ4 acceleration level, 1 to 9.
-  !> @return NetCDF error code: NF90_NOERR on success, NF90_EINVAL
-  !> for an invalid level, NF90_EFILTER if the LZ4 filter plugin is
-  !> unavailable.
+  !> @return NetCDF error code: NF90_NOERR on success, NF90_ENOFILTER
+  !> if the LZ4 filter plugin is unavailable (checked before the
+  !> level), NF90_EINVAL for an invalid level, or another NetCDF
+  !> error.
   !>
   !> @author Edward Hartnett, Intelligent Data Design, Inc.
   function nf90_def_var_lz4(ncid, varid, level) result(status)
@@ -73,13 +75,19 @@ contains
   !> @brief Inquire whether LZ4 compression is in use on a NetCDF-4
   !> variable.
   !>
+  !> The whole filter pipeline is searched, so LZ4 is found whatever
+  !> its position. The LZ4 HDF5 plugin does not need to be available.
+  !>
   !> @param ncid NetCDF file ID.
   !> @param varid Variable ID (1-based).
   !> @param has Required output argument; set to 1 when the variable
   !> uses the LZ4 filter and 0 otherwise.
   !> @param level Required output argument; set to the LZ4 acceleration
-  !> level stored with the filter when the variable uses LZ4.
-  !> @return NetCDF error code, NF90_NOERR on success.
+  !> level stored with the filter. Written only when LZ4 is present
+  !> with exactly one parameter.
+  !> @return NetCDF error code: NF90_NOERR on success, NF90_EFILTER
+  !> (with @c has set to 1) if the LZ4 filter has a parameter count
+  !> other than 1, or another NetCDF error.
   !>
   !> @author Edward Hartnett, Intelligent Data Design, Inc.
   function nf90_inq_var_lz4(ncid, varid, has, level) result(status)
@@ -101,9 +109,12 @@ contains
   !> @param varid Variable ID (1-based, as in the NetCDF Fortran API).
   !> @param level BZIP2 compression level, 1 to 9 (block sizes of
   !> 100-900 KB).
-  !> @return NetCDF error code: NF90_NOERR on success, NF90_EINVAL
-  !> for an invalid level, NF90_EFILTER if the BZIP2 filter plugin is
-  !> unavailable.
+  !> @return NetCDF error code: NF90_NOERR on success, NF90_ENOFILTER
+  !> if the BZIP2 filter plugin is unavailable (checked before the
+  !> level), NF90_EINVAL for an invalid level, or another NetCDF
+  !> error.
+  !>
+  !> Calls NetCDF-C's nc_def_var_bzip2().
   !>
   !> @author Edward Hartnett, Intelligent Data Design, Inc.
   function nf90_def_var_bzip2(ncid, varid, level) result(status)
@@ -120,9 +131,14 @@ contains
   !> @param has Required output argument; set to 1 when the variable
   !> uses the BZIP2 filter and 0 otherwise.
   !> @param level Required output argument; set to the BZIP2
-  !> compression level stored with the filter when the variable uses
-  !> BZIP2.
-  !> @return NetCDF error code, NF90_NOERR on success.
+  !> compression level stored with the filter. Written only when BZIP2
+  !> is present with exactly one parameter.
+  !> @return NetCDF error code: NF90_NOERR on success, NF90_ENOFILTER
+  !> if the BZIP2 filter plugin is unavailable, NF90_EFILTER (with
+  !> @c has set to 1) if filter 307 has a parameter count other than
+  !> 1, or another NetCDF error.
+  !>
+  !> Calls NetCDF-C's nc_inq_var_bzip2().
   !>
   !> @author Edward Hartnett, Intelligent Data Design, Inc.
   function nf90_inq_var_bzip2(ncid, varid, has, level) result(status)

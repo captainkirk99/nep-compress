@@ -1,135 +1,48 @@
 /**
  * @file nep_compress.c
- * @brief Implementation of the nep-compress LZ4 and BZIP2 filter API.
+ * @brief Implementation of the nep-compress LZ4 filter API.
  *
  * @author Edward Hartnett, Intelligent Data Design, Inc.
  */
 #include "nep_compress.h"
 
-#include <hdf5.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#if defined(NEPCOMPRESS_BUILD_LZ4) || defined(NEPCOMPRESS_BUILD_BZIP2)
-/**
- * @brief Shared implementation of the nc_def_var_*() filter functions.
- *
- * Validates the level, checks that the HDF5 filter plugin is
- * available, then registers the filter on the variable through
- * nc_def_var_filter() with the level as its single parameter.
- *
- * @param ncid NetCDF file ID.
- * @param varid Variable ID.
- * @param level Compression level, 1 to 9.
- * @param id HDF5 filter ID to register.
- * @param name Filter name used in the message printed when the plugin
- * is unavailable.
- * @return NC_NOERR on success, NC_EINVAL for an invalid level,
- * NC_EFILTER if the filter plugin is unavailable, or another NetCDF
- * error code.
- *
- * @author Edward Hartnett, Intelligent Data Design, Inc.
- *
- * @internal
- */
-static int
-define_filter(int ncid, int varid, int level, unsigned int id, const char *name)
-{
-    unsigned int value;
-
-    if (level < 1 || level > 9)
-        return NC_EINVAL;
-    if (!H5Zfilter_avail(id))
-    {
-        printf("%s filter not available.\n", name);
-        return NC_EFILTER;
-    }
-    value = (unsigned int)level;
-    return nc_def_var_filter(ncid, varid, id, 1, &value);
-}
-#endif
-
 #ifdef NEPCOMPRESS_BUILD_LZ4
 int
 nc_def_var_lz4(int ncid, int varid, int level)
 {
-    return define_filter(ncid, varid, level, LZ4_ID, "lz4");
+    unsigned int value;
+    int ret;
+
+    if ((ret = nc_inq_filter_avail(ncid, LZ4_ID)))
+        return ret;
+    if (level < 1 || level > 9)
+        return NC_EINVAL;
+    value = (unsigned int)level;
+    return nc_def_var_filter(ncid, varid, LZ4_ID, 1, &value);
 }
 
 int
 nc_inq_var_lz4(int ncid, int varid, int *lz4p, int *levelp)
 {
-    unsigned int id, level;
     size_t nparams;
-    int ret = nc_inq_var_filter(ncid, varid, &id, &nparams, &level);
+    unsigned int level;
+    int ret;
 
+    if (lz4p)
+        *lz4p = 0;
+    ret = nc_inq_var_filter_info(ncid, varid, LZ4_ID, &nparams, NULL);
     if (ret == NC_ENOFILTER)
-    {
-        if (lz4p)
-            *lz4p = 0;
         return NC_NOERR;
-    }
     if (ret)
         return ret;
     if (lz4p)
-        *lz4p = id == LZ4_ID;
-    if (id == LZ4_ID)
-    {
-        if (nparams != 1)
-            return NC_EFILTER;
-        if (levelp)
-            *levelp = (int)level;
-    }
-    return NC_NOERR;
-}
-#endif
-
-#ifdef NEPCOMPRESS_BUILD_BZIP2
-int
-nc_def_var_bzip2(int ncid, int varid, int level)
-{
-    return define_filter(ncid, varid, level, BZIP2_ID, "bzip2");
-}
-
-int
-nc_inq_var_bzip2(int ncid, int varid, int *bzip2p, int *levelp)
-{
-    size_t nfilters, nparams, i;
-    unsigned int *ids, level;
-    int ret = nc_inq_var_filter_ids(ncid, varid, &nfilters, NULL);
-
-    if (ret)
+        *lz4p = 1;
+    if (nparams != 1)
+        return NC_EFILTER;
+    if ((ret = nc_inq_var_filter_info(ncid, varid, LZ4_ID, &nparams, &level)))
         return ret;
-    if (bzip2p)
-        *bzip2p = 0;
-    if (!nfilters)
-        return NC_NOERR;
-    ids = malloc(nfilters * sizeof(*ids));
-    if (!ids)
-        return NC_ENOMEM;
-    ret = nc_inq_var_filter_ids(ncid, varid, &nfilters, ids);
-    if (ret)
-        goto done;
-    for (i = 0; i < nfilters; i++)
-    {
-        if (ids[i] != BZIP2_ID)
-            continue;
-        ret = nc_inq_var_filter_info(ncid, varid, ids[i], &nparams, &level);
-        if (ret)
-            goto done;
-        if (nparams != 1)
-        {
-            ret = NC_EFILTER;
-            goto done;
-        }
-        if (levelp)
-            *levelp = (int)level;
-        if (bzip2p)
-            *bzip2p = 1;
-        break;
-    }
-done:
-    free(ids);
-    return ret;
+    if (levelp)
+        *levelp = (int)level;
+    return NC_NOERR;
 }
 #endif

@@ -150,11 +150,9 @@ buffers to get counts, allocate, call again. Any output pointer may be NULL.
   with an inquiry.
 - `nc_def_var_bzip2`/`nc_inq_var_bzip2` are always compiled into libnetcdf
   (since 4.9.0) and validate level 1-9 after checking availability.
-  **nep-compress also defines `nc_def_var_bzip2` and `nc_inq_var_bzip2`**,
-  so the same symbols exist in both `libnetcdf` and `libnepcompress`; which
-  one is called depends on link/load order. Error codes differ: NetCDF-C
-  returns `NC_ENOFILTER` for a missing plugin, nep-compress returns
-  `NC_EFILTER`.
+  nep-compress no longer defines them; its Fortran
+  `nf90_def_var_bzip2`/`nf90_inq_var_bzip2` wrappers bind to NetCDF-C's
+  symbols. A missing plugin returns `NC_ENOFILTER`.
 - Variable-length types (`NC_STRING`, `NC_VLEN`, compounds containing
   them): non-builtin filters are set with `H5Z_FLAG_OPTIONAL`, so HDF5
   skips them. When opening a file where a varsized variable has a
@@ -342,11 +340,15 @@ static size_t filter_func(unsigned flags, size_t cd_nelmts, const unsigned cd_va
 
 ## nep-compress conventions
 
-- nep-compress wrappers (`nc_def_var_lz4`, `nc_def_var_bzip2`) validate
-  level 1-9, check `H5Zfilter_avail`, return `NC_EFILTER` if unavailable,
-  then call `nc_def_var_filter(ncid, varid, id, 1, &level)`.
-- Tests must set `HDF5_PLUGIN_PATH` to the build-tree plugin directory
-  (CTest does this per test). See `README.md` and `docs/compression.md`.
+- `nc_def_var_lz4` checks `nc_inq_filter_avail` first and returns
+  `NC_ENOFILTER` if the plugin is missing, then `NC_EINVAL` for a level
+  outside 1-9. `nc_inq_var_lz4` uses `nc_inq_var_filter_info(LZ4_ID)`
+  count-first, finds LZ4 anywhere in the pipeline, and does not need the
+  plugin.
+- Tests set `HDF5_PLUGIN_PATH` to one plugin directory per filter: the
+  build-tree LZ4 directory for LZ4 tests, the external directory for
+  BZIP2 tests (CTest does this per test). See `README.md` and
+  `docs/compression.md`.
 - When comparing filters (zlib, szip, zstd, bzip2, blosc, LZ4), check
   availability with `nc_inq_filter_avail` first and skip unavailable ones
   rather than relying on wrappers that may silently no-op.
