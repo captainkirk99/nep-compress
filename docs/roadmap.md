@@ -34,10 +34,12 @@ Fix issues #3, #4 and #5.
 Plan: [docs/plans/v1.1.0-sprint2-fix-issues.md](plans/v1.1.0-sprint2-fix-issues.md)
 
 ### Sprint 3: Compression Performance Example
-Add subdirectory performance.
-Everything in performance subdir is written and run as a repo test, i.e. run with "make test"
-Need a test which tries all available filters and compares.
-We need some real data to try this on. Take a sizable (10 MB) sample from this data file: 
-Style similar to this program from my book: https://github.com/captainkirk99/NetCDF_Developers_Handbook/blob/main/examples/performance/zstandard.c
-Full doxygen documentation.
+- New top-level `performance/` with `compare_filters.c` (book `zstandard.c` style, full Doxygen), run by ctest as `perf_compare_filters`. `examples/performance` is unchanged.
+- Compares none, deflate 1/5/9, szip, zstd 1/3/9/19, bzip2 1/9, LZ4 1/9, each with and without shuffle; unavailable filters are skipped. Timed: create-write-close and open-read-close, minimum of 3 runs. Pass = bit-exact round trip and filter IDs verified; no ratio or speed thresholds.
+- Data: `test/data/gdas_sfc_sample.nc` (`tmp2m`, `prate_ave`, `soilw1`, `land` from the GDAS sfcf003 file, shuffle + zstd 19, about 6.4 MB), built by `performance/make_gdas_sample.sh`.
+- New `NEPCOMPRESS_ZSTD_PLUGIN_DIR` (needed to read the sample, and it enables the test). The test uses an ordered plugin path with `build/plugin` first, plus the LZ4 provider check.
+- Reference CSV and machine info are committed and summarized on the mainpage. CI runs the test in every job and uploads the CSV.
+- Out of scope: quantize/lossy rows, blosc and other hdf5plugin filters, plots, ratio/speed assertions.
+
+Plan: [docs/plans/v1.1.0-sprint3-compression-performance-example.md](plans/v1.1.0-sprint3-compression-performance-example.md)
 

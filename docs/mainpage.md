@@ -77,8 +77,35 @@ The [performance examples](https://github.com/captainkirk99/nep-compress/blob/ma
 contain historical LZ4 and BZIP2 measurements
 ([lz4_results.csv](https://github.com/captainkirk99/nep-compress/blob/main/examples/performance/lz4_results.csv),
 [bzip2_results.csv](https://github.com/captainkirk99/nep-compress/blob/main/examples/performance/bzip2_results.csv)).
-Measured comparisons across all of these filters will be published in a
-later release.
+
+## Measured comparison
+
+The `perf_compare_filters` test rewrote four fields from a real GDAS
+surface file with every lossless filter, each with the shuffle filter
+off and on, on one development machine (see
+[reference_machine.txt](https://github.com/captainkirk99/nep-compress/blob/main/performance/reference_machine.txt);
+full CSV in
+[reference_results.csv](https://github.com/captainkirk99/nep-compress/blob/main/performance/reference_results.csv);
+see the [performance README](https://github.com/captainkirk99/nep-compress/blob/main/performance/README.md)).
+The table below shows the shuffle-on rows for two of the fields:
+`tmp2m` (smooth 2 m temperature) and `prate_ave` (noisy precipitation
+rate).
+
+| Filter | Level | tmp2m ratio | tmp2m write MB/s | tmp2m read MB/s | prate_ave ratio | prate_ave write MB/s | prate_ave read MB/s |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| none | 0 | 1.00 | 259 | 721 | 1.00 | 367 | 1188 |
+| deflate | 1 | 1.88 | 63 | 356 | 1.40 | 51 | 254 |
+| deflate | 5 | 1.90 | 54 | 358 | 1.44 | 39 | 263 |
+| deflate | 9 | 1.92 | 14 | 380 | 1.45 | 5 | 275 |
+| szip | 32 | 1.83 | 108 | 144 | 1.15 | 91 | 100 |
+| zstd | 1 | 1.87 | 254 | 788 | 1.42 | 177 | 702 |
+| zstd | 3 | 1.88 | 219 | 700 | 1.43 | 103 | 795 |
+| zstd | 9 | 1.91 | 89 | 790 | 1.45 | 44 | 574 |
+| zstd | 19 | 1.98 | 7 | 826 | 1.48 | 5 | 698 |
+| bzip2 | 1 | 2.07 | 17 | 38 | 1.48 | 13 | 28 |
+| bzip2 | 9 | 2.06 | 16 | 31 | 1.48 | 12 | 23 |
+| lz4 | 1 | 1.76 | 328 | 1101 | 1.31 | 258 | 953 |
+| lz4 | 9 | 1.76 | 342 | 1103 | 1.27 | 294 | 988 |
 
 # Books
 

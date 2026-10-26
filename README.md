@@ -66,6 +66,17 @@ ln -sf /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5bzip2.so "$HOME/plugins/bzip
 
 and pass `-DNEPCOMPRESS_BZIP2_PLUGIN_DIR=$HOME/plugins/bzip2-only`.
 
+To enable the `perf_compare_filters` test, also give NetCDF-C's zstd
+plugin its own directory — the same rule as bzip2: exactly one 32015
+provider in that directory.
+
+```sh
+mkdir -p "$HOME/plugins/zstd-only"
+ln -sf /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5zstd.so "$HOME/plugins/zstd-only/"
+```
+
+and pass `-DNEPCOMPRESS_ZSTD_PLUGIN_DIR=$HOME/plugins/zstd-only`.
+
 ## Build and test
 
 Choose a clean `build` directory. Set `CMAKE_PREFIX_PATH`, `PKG_CONFIG_PATH`, and
@@ -97,6 +108,7 @@ equivalent if a custom NetCDF or HDF5 is installed.
 | `NEPCOMPRESS_BUILD_LZ4` | ON | Build LZ4 API and plugin |
 | `NEPCOMPRESS_BUILD_BZIP2` | OFF | Build the Fortran BZIP2 API and tests (uses NetCDF-C's nc_def_var_bzip2; requires an external HDF5 plugin) |
 | `NEPCOMPRESS_BZIP2_PLUGIN_DIR` | empty | Directory to probe for BZIP2 when enabled |
+| `NEPCOMPRESS_ZSTD_PLUGIN_DIR` | empty | zstd (32015) plugin directory; enables the `perf_compare_filters` test |
 | `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
 | `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
 | `BUILD_TESTING` | ON | Register C, HDF5 and optional Fortran tests |
@@ -123,7 +135,8 @@ exports `NEPCompress::nepcompressf`. The module is installed under
 `include/nep-compress`, so add that directory to Fortran's module path.
 
 The [LZ4 on-disk format](plugins/LZ4_HDF5_format.md) and
-[optional performance examples](examples/performance/README.md) provide
+[optional performance examples](examples/performance/README.md) and the
+[performance test](performance/README.md) provide
 additional reference material.
 
 ## Books

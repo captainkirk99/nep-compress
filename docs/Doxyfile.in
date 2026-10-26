@@ -9,7 +9,8 @@ INPUT                  = @NEPC_SOURCE_DIR@/docs/mainpage.md \
                          @NEPC_SOURCE_DIR@/src \
                          @NEPC_SOURCE_DIR@/fsrc \
                          @NEPC_SOURCE_DIR@/plugins \
-                         @NEPC_SOURCE_DIR@/examples/performance
+                         @NEPC_SOURCE_DIR@/examples/performance \
+                         @NEPC_SOURCE_DIR@/performance
 FILE_PATTERNS          = *.h *.c *.F90 *.f90 *.md
 EXTENSION_MAPPING      = F90=FortranFree f90=FortranFree
 RECURSIVE              = YES
