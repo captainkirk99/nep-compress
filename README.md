@@ -1,12 +1,31 @@
 # nep-compress
 
-LZ4 and BZIP2 compression for NetCDF-4/HDF5, with C and optional Fortran
-wrappers. This code is being separated from
-[NEP](https://github.com/Intelligent-Data-Design-Inc/NEP) to make compression
-easier to build and use without installing its format readers. NEP remains
-the project for UDF formats and NEXTCDF-4; it still ships its original
-compression APIs during the migration. See the [compression guide](docs/compression.md)
-for API details and file compatibility.
+nep-compress contains additional compression filters for netCDF.
+
+NetCDF ships with support for zlib, szlib, bzip2, and zstd, added in
+netcdf-c-4.9.0 (2022).
+
+Of those choices, zstd is the clear winner for most users. It's much
+faster than any of the others. But there are other, even more
+attractive compression choices available with nep-compress.
+
+## Compression Filters in nep-compress
+
+nep-compress supports the following additional compression filters for netCDF:
+* LZ4 - not as compressive as zstd, but blazing fast,
+causing almost no addition delay when writing or reading data.
+
+## Provenence of nep-compress
+
+nep-compress contains code which was previously part of the [NetCDF
+Expansion Pack
+(NEP)](https://github.com/Intelligent-Data-Design-Inc/NEP) to make
+compression easier to build and use.
+
+The NEP allows users to access additional format with netCDF tools and
+programs. Earth science formats like GeoTIFF and GRIB2, but also space
+science formats CDF, FITS, and PDS 3/4, as well as medical images and
+protien folding database formats. See the project website for more info.
 
 nep-compress **builds an LZ4 HDF5 plugin** (`libh5lz4.so`, filter ID 32004).
 For BZIP2 (ID 307), it builds the C/Fortran API but requires a compatible
@@ -14,25 +33,6 @@ For BZIP2 (ID 307), it builds the C/Fortran API but requires a compatible
 is not a plugin. BZIP2 is OFF by default.
 
 **Documentation:** https://captainkirk99.github.io/nep-compress/
-
-## Books
-
-<table><tr>
-<td><a href="https://www.amazon.com/dp/B0H7Q49MPS"><img src="docs/NDH_cover.jpg" width="200" alt="The NetCDF Developer's Handbook, Second Edition"></a></td>
-<td><a href="https://www.amazon.com/dp/B0HJRZ9F7L"><img src="docs/EOiP_cover.jpg" width="200" alt="Earth Observation in Practice"></a></td>
-</tr></table>
-
-[The NetCDF Developer's Handbook: The Authoritative Guide to Writing
-High-Performance Programs for Scientific Data Management, Second
-Edition](https://www.amazon.com/dp/B0H7Q49MPS) is the complete
-NetCDF-C and NetCDF-Fortran reference, covering compression filters,
-chunking and quantization in depth.
-
-[Earth Observation in Practice: A Mission-by-Mission Guide to Reading
-Satellite Data with NetCDF and
-Python](https://www.amazon.com/dp/B0HJRZ9F7L) is a mission-by-mission
-guide to the spacecraft, instruments and data products of modern remote
-sensing.
 
 ## Dependencies
 
@@ -66,15 +66,21 @@ ln -sf /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5bzip2.so "$HOME/plugins/bzip
 
 and pass `-DNEPCOMPRESS_BZIP2_PLUGIN_DIR=$HOME/plugins/bzip2-only`.
 
+To enable the `perf_compare_filters` test, also give NetCDF-C's zstd
+plugin its own directory — the same rule as bzip2: exactly one 32015
+provider in that directory.
+
+```sh
+mkdir -p "$HOME/plugins/zstd-only"
+ln -sf /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5zstd.so "$HOME/plugins/zstd-only/"
+```
+
+and pass `-DNEPCOMPRESS_ZSTD_PLUGIN_DIR=$HOME/plugins/zstd-only`.
+
 ## Build and test
 
-Choose a clean `build` directory (do not overwrite an existing build without
-checking its contents). Set `CMAKE_PREFIX_PATH`, `PKG_CONFIG_PATH`, and
-`HDF5_ROOT` for your matching HDF5/NetCDF installations as needed. HDF5 is
-located through CMake's module finder so HDF5 2.x installations satisfy the
-1.14 minimum version, even if an older `HDF5_DIR` remains in the build cache.
-When switching HDF5 installations, use a new build directory: other cached
-HDF5 library and include paths may still point at the old installation.
+Choose a clean `build` directory. Set `CMAKE_PREFIX_PATH`, `PKG_CONFIG_PATH`, and
+`HDF5_ROOT` for your matching HDF5/NetCDF installations as needed.
 
 ```sh
 cmake -S . -B build -DNEPCOMPRESS_BUILD_LZ4=ON \
@@ -82,21 +88,6 @@ cmake -S . -B build -DNEPCOMPRESS_BUILD_LZ4=ON \
 cmake --build build
 ctest --test-dir build --output-on-failure
 cmake --install build --prefix "$PWD/build/stage"
-```
-
-For both filters on this machine, use:
-
-```sh
-export PATH="/usr/local/hdf5-2.1.1/bin:/usr/local/netcdf-c/bin:/usr/local/netcdf-fortran/bin:$PATH"
-export PKG_CONFIG_PATH="/usr/local/netcdf-c/lib/pkgconfig:/usr/local/netcdf-fortran/lib/pkgconfig:$PKG_CONFIG_PATH"
-export LD_LIBRARY_PATH="/usr/local/hdf5-2.1.1/lib:/usr/local/netcdf-c/lib:/usr/local/netcdf-fortran/lib:$LD_LIBRARY_PATH"
-cmake -S . -B build \
-  -DCMAKE_PREFIX_PATH="/usr/local/hdf5-2.1.1;/usr/local/netcdf-c;/usr/local/netcdf-fortran" \
-  -DHDF5_ROOT=/usr/local/hdf5-2.1.1 \
-  -DNEPCOMPRESS_BUILD_BZIP2=ON \
-  -DNEPCOMPRESS_BZIP2_PLUGIN_DIR=$HOME/plugins/bzip2-only
-cmake --build build
-ctest --test-dir build --output-on-failure
 ```
 
 CTest sets the plugin search path for each test. For installed applications,
@@ -117,25 +108,12 @@ equivalent if a custom NetCDF or HDF5 is installed.
 | `NEPCOMPRESS_BUILD_LZ4` | ON | Build LZ4 API and plugin |
 | `NEPCOMPRESS_BUILD_BZIP2` | OFF | Build the Fortran BZIP2 API and tests (uses NetCDF-C's nc_def_var_bzip2; requires an external HDF5 plugin) |
 | `NEPCOMPRESS_BZIP2_PLUGIN_DIR` | empty | Directory to probe for BZIP2 when enabled |
+| `NEPCOMPRESS_ZSTD_PLUGIN_DIR` | empty | zstd (32015) plugin directory; enables the `perf_compare_filters` test |
 | `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
 | `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
 | `BUILD_TESTING` | ON | Register C, HDF5 and optional Fortran tests |
 | `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` | empty | Run optional read/write tests with an older LZ4 plugin |
 | `NEPCOMPRESS_BUILD_DOCS` | OFF | Add a `docs` target that builds Doxygen HTML documentation |
-
-## Building the documentation
-
-The documentation builds with Doxygen and Graphviz `dot`, with no
-NetCDF, HDF5 or Fortran requirements. Either run the script directly:
-
-```sh
-cmake -DNEPC_OUTPUT_DIR=build/docs -P docs/build_docs.cmake
-```
-
-or configure with `-DNEPCOMPRESS_BUILD_DOCS=ON` and build the `docs`
-target; HTML lands in `build/docs/html`. Set
-`-DNEPCOMPRESS_DOCS_WARN_AS_ERROR=FAIL_ON_WARNINGS` to make
-documentation warnings fatal, as CI does.
 
 ## Using the libraries
 
@@ -156,15 +134,35 @@ NetCDF-C (or use the installed
 exports `NEPCompress::nepcompressf`. The module is installed under
 `include/nep-compress`, so add that directory to Fortran's module path.
 
-Former NEP clients switch `<nep.h>` to `<nep_compress.h>`, `-lnep` to
-`-lnepcompress` for compression calls, and `use nep` / `-lnepf` to
-`use nep_compress` / `-lnepcompressf`. Keep linking NEP separately if
-you also use its format libraries. The C/Fortran procedure names, filter
-IDs and file encoding stay the same; this is **not** a promise of
-binary-compatible linkage to the old NEP libraries. Existing compressed
-files need an appropriate HDF5 decoder on the reader's plugin path.
-
 The [LZ4 on-disk format](plugins/LZ4_HDF5_format.md) and
-[optional performance examples](examples/performance/README.md) provide
-additional reference material. Tests cover nep-compress's own files;
-interchange with files written through old NEP is not a release requirement.
+[optional performance examples](examples/performance/README.md) and the
+[performance test](performance/README.md) provide
+additional reference material.
+
+## Books
+
+For more information about netCDF and how to use it, see [The NetCDF
+Developer's Handbook: The Authoritative Guide to Writing
+High-Performance Programs for Scientific Data Management, Second
+Edition](https://www.amazon.com/dp/B0H7Q49MPS). It is a complete
+netCDF C/Fortran/Java reference, covering compression filters,
+chunking and quantization in depth.
+
+<table><tr>
+<td><a href="https://www.amazon.com/dp/B0H7Q49MPS"><img src="docs/NDH_cover.jpg" width="200" alt="The NetCDF Developer's Handbook, Second Edition"></a></td>
+</tr></table>
+
+If your interests are in Earth Observation, take a look at [Earth
+Observation in Practice: A Mission-by-Mission Guide to Reading
+Satellite Data with NetCDF and
+Python](https://www.amazon.com/dp/B0HJRZ9F7L) It is a guide to the
+spacecraft, instruments and data products of 21st century remote
+sensing, with GOES, NISAR, Meteosat, and all out other favorite Earth
+observing platforms.
+
+<table><tr>
+<td><a href="https://www.amazon.com/dp/B0HJRZ9F7L"><img src="docs/EOiP_cover.jpg" width="200" alt="Earth Observation in Practice"></a></td>
+</tr></table>
+
+
+

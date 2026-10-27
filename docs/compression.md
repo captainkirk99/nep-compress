@@ -92,6 +92,15 @@ keep their source, historical CSV results, plotters and metadata together.
 Run them manually to obtain measurements for your machine; they are not
 part of regular CTest. They do not guarantee specific speedups or ratios.
 
+The `perf_compare_filters` test in `performance/` does run under CTest
+when `NEPCOMPRESS_ZSTD_PLUGIN_DIR` is set. It rewrites four real GDAS
+surface fields with every available lossless filter, checks each round
+trip bit-exactly and reports size, ratio and write/read throughput as
+CSV and a table. Reference numbers from the development machine are in
+[reference_results.csv](https://github.com/captainkirk99/nep-compress/blob/main/performance/reference_results.csv)
+and
+[reference_machine.txt](https://github.com/captainkirk99/nep-compress/blob/main/performance/reference_machine.txt).
+
 nep-compress retains IDs 32004 and 307 with one-parameter filter
 definitions. Tests check its own write/reopen/read values and filter
 metadata, plus optional reference LZ4 plugin checks. Interchange with

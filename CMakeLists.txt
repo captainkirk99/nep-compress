@@ -12,6 +12,7 @@ option(NEPCOMPRESS_BUILD_DOCS "Build Doxygen HTML documentation" OFF)
 set(NEPCOMPRESS_DOCS_WARN_AS_ERROR "NO" CACHE STRING
     "Doxygen WARN_AS_ERROR value (e.g. FAIL_ON_WARNINGS)")
 set(NEPCOMPRESS_BZIP2_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 307")
+set(NEPCOMPRESS_ZSTD_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 32015 (zstd); enables the performance test")
 set(NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR "" CACHE PATH "Optional previous LZ4 plugin directory for cross-plugin file tests")
 
 if(NOT NEPCOMPRESS_BUILD_LZ4 AND NOT NEPCOMPRESS_BUILD_BZIP2)
@@ -30,32 +31,47 @@ if(NEPCOMPRESS_BUILD_LZ4)
     pkg_check_modules(LZ4 REQUIRED IMPORTED_TARGET liblz4)
 endif()
 
-if(NEPCOMPRESS_BUILD_BZIP2)
-    if(NOT IS_DIRECTORY "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}")
-        message(FATAL_ERROR "Set NEPCOMPRESS_BZIP2_PLUGIN_DIR to a directory with an HDF5 filter 307 plugin")
-    endif()
-    include(CheckCSourceRuns)
+include(CheckCSourceRuns)
+
+# Probe one HDF5 plugin directory: check that filter <id> is available
+# with encode and decode support when HDF5_PLUGIN_PATH is <dir>. The
+# result is stored in the cache variable named by <resultvar>.
+function(nepc_require_filter_plugin id dir resultvar)
     set(_saved_plugin_path "$ENV{HDF5_PLUGIN_PATH}")
-    set(ENV{HDF5_PLUGIN_PATH} "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}")
+    set(ENV{HDF5_PLUGIN_PATH} "${dir}")
     set(CMAKE_REQUIRED_INCLUDES "${HDF5_INCLUDE_DIRS}")
     set(CMAKE_REQUIRED_LIBRARIES "${HDF5_LIBRARIES}")
-    unset(NEPCOMPRESS_BZIP2_PLUGIN_OK CACHE)
+    unset(${resultvar} CACHE)
     check_c_source_runs("
 #include <hdf5.h>
 int main(void) {
     unsigned int flags = 0;
-    if (H5open() < 0 || H5Zfilter_avail(307) <= 0 ||
-        H5Zget_filter_info(307, &flags) < 0)
+    if (H5open() < 0 || H5Zfilter_avail(${id}) <= 0 ||
+        H5Zget_filter_info(${id}, &flags) < 0)
         return 1;
     return (flags & (H5Z_FILTER_CONFIG_ENCODE_ENABLED | H5Z_FILTER_CONFIG_DECODE_ENABLED)) ==
            (H5Z_FILTER_CONFIG_ENCODE_ENABLED | H5Z_FILTER_CONFIG_DECODE_ENABLED) ? 0 : 1;
-}" NEPCOMPRESS_BZIP2_PLUGIN_OK)
+}" ${resultvar})
     set(ENV{HDF5_PLUGIN_PATH} "${_saved_plugin_path}")
     unset(CMAKE_REQUIRED_INCLUDES)
     unset(CMAKE_REQUIRED_LIBRARIES)
-    if(NOT NEPCOMPRESS_BZIP2_PLUGIN_OK)
-        message(FATAL_ERROR "HDF5 filter 307 is unavailable or lacks encode/decode support in NEPCOMPRESS_BZIP2_PLUGIN_DIR")
+    if(NOT ${resultvar})
+        message(FATAL_ERROR "HDF5 filter ${id} is unavailable or lacks encode/decode support in ${dir}")
     endif()
+endfunction()
+
+if(NEPCOMPRESS_BUILD_BZIP2)
+    if(NOT IS_DIRECTORY "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}")
+        message(FATAL_ERROR "Set NEPCOMPRESS_BZIP2_PLUGIN_DIR to a directory with an HDF5 filter 307 plugin")
+    endif()
+    nepc_require_filter_plugin(307 "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}" NEPCOMPRESS_BZIP2_PLUGIN_OK)
+endif()
+
+if(NEPCOMPRESS_ZSTD_PLUGIN_DIR)
+    if(NOT IS_DIRECTORY "${NEPCOMPRESS_ZSTD_PLUGIN_DIR}")
+        message(FATAL_ERROR "Set NEPCOMPRESS_ZSTD_PLUGIN_DIR to a directory with an HDF5 filter 32015 plugin")
+    endif()
+    nepc_require_filter_plugin(32015 "${NEPCOMPRESS_ZSTD_PLUGIN_DIR}" NEPCOMPRESS_ZSTD_PLUGIN_OK)
 endif()
 
 add_library(nepcompress SHARED src/nep_compress.c)
@@ -114,6 +130,7 @@ install(EXPORT NEPCompressTargets
 
 if(BUILD_TESTING)
     add_subdirectory(test)
+    add_subdirectory(performance)
 endif()
 if(NEPCOMPRESS_BUILD_BENCHMARKS)
     add_subdirectory(examples/performance)

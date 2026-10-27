@@ -9,7 +9,8 @@ INPUT                  = @NEPC_SOURCE_DIR@/docs/mainpage.md \
                          @NEPC_SOURCE_DIR@/src \
                          @NEPC_SOURCE_DIR@/fsrc \
                          @NEPC_SOURCE_DIR@/plugins \
-                         @NEPC_SOURCE_DIR@/examples/performance
+                         @NEPC_SOURCE_DIR@/examples/performance \
+                         @NEPC_SOURCE_DIR@/performance
 FILE_PATTERNS          = *.h *.c *.F90 *.f90 *.md
 EXTENSION_MAPPING      = F90=FortranFree f90=FortranFree
 RECURSIVE              = YES
@@ -17,7 +18,8 @@ EXCLUDE_PATTERNS       = */build/* */README.md
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 PREDEFINED             = NEPCOMPRESS_BUILD_LZ4 NEPCOMPRESS_BUILD_BZIP2
-IMAGE_PATH             = @NEPC_SOURCE_DIR@/docs
+IMAGE_PATH             = @NEPC_SOURCE_DIR@/docs \
+                         @NEPC_SOURCE_DIR@/docs/images
 HTML_EXTRA_FILES       = @NEPC_SOURCE_DIR@/docs/NDH_cover.jpg \
                          @NEPC_SOURCE_DIR@/docs/EOiP_cover.jpg
 EXTRACT_STATIC         = YES

@@ -1,0 +1,12 @@
+Run date: 2026-10-26 15:50 UTC
+CPU: Intel(R) Core(TM) i7-6800K CPU @ 3.40GHz
+Cores: 12
+OS: Linux 6.8.0-137-generic
+Compiler: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+netCDF 4.10.2-development
+HDF5: 2.1.1
+LZ4 provider: build/plugin/libh5lz4.so (nep-compress)
+BZIP2 provider: /home/ed/plugins/bzip2-only/lib__nch5bzip2.so -> /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5bzip2.so
+zstd provider: /home/ed/plugins/zstd-only/lib__nch5zstd.so -> /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5zstd.so
+NREPS: 3
+Sample: test/data/gdas_sfc_sample.nc

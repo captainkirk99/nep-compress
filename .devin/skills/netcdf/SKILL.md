@@ -349,6 +349,14 @@ static size_t filter_func(unsigned flags, size_t cd_nelmts, const unsigned cd_va
   build-tree LZ4 directory for LZ4 tests, the external directory for
   BZIP2 tests (CTest does this per test). See `README.md` and
   `docs/compression.md`.
+- `perf_compare_filters` is the single exception to the one-directory
+  rule: it uses one ordered `HDF5_PLUGIN_PATH` with `build/plugin` first
+  (so nep-compress's LZ4 wins) and checks the loaded LZ4 provider. It
+  also needs a 32015 (zstd) plugin to read
+  `test/data/gdas_sfc_sample.nc`. To write that sample, `nccopy` needs a
+  two-step copy (`-d 0` decompress first, then `-F`), and shuffle must
+  be given as filter `2` in the `-F` chain, e.g.
+  `nccopy -F "tmp2m&prate_ave&soilw1&land,2|32015,19"`.
 - When comparing filters (zlib, szip, zstd, bzip2, blosc, LZ4), check
   availability with `nc_inq_filter_avail` first and skip unavailable ones
   rather than relying on wrappers that may silently no-op.
