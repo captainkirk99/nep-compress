@@ -35,6 +35,23 @@ The CSV lands in
 `reference_results.csv` and `reference_machine.txt` in this directory
 record a run on the development machine.
 
+## Plotting
+
+`plot_compare_filters.py` graphs a results CSV (needs matplotlib):
+
+```sh
+python3 performance/plot_compare_filters.py \
+  build/performance/perf_compare_filters/compare_filters.csv \
+  /tmp/compare_filters
+```
+
+It writes `<prefix>_write.png`, `<prefix>_read.png`,
+`<prefix>_write_simple.png` and `<prefix>_read_simple.png`: 2x2 panels,
+one per field, scatter of ratio vs write/read throughput; one marker
+shape per filter, filled = shuffle on, open = shuffle off. The
+`*_simple` plots show only shuffle-on points at the fastest write level
+per filter.
+
 `make_gdas_sample.sh` regenerates the sample; see
 `test/data/README.md`.
 

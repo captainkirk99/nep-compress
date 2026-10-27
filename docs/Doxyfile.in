@@ -18,7 +18,8 @@ EXCLUDE_PATTERNS       = */build/* */README.md
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 PREDEFINED             = NEPCOMPRESS_BUILD_LZ4 NEPCOMPRESS_BUILD_BZIP2
-IMAGE_PATH             = @NEPC_SOURCE_DIR@/docs
+IMAGE_PATH             = @NEPC_SOURCE_DIR@/docs \
+                         @NEPC_SOURCE_DIR@/docs/images
 HTML_EXTRA_FILES       = @NEPC_SOURCE_DIR@/docs/NDH_cover.jpg \
                          @NEPC_SOURCE_DIR@/docs/EOiP_cover.jpg
 EXTRACT_STATIC         = YES

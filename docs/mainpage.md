@@ -27,9 +27,10 @@ nf90_def_var_lz4(), nf90_inq_var_lz4(), nf90_def_var_bzip2(), and
 nf90_inq_var_bzip2().
 
 The LZ4 filter plugin itself is implemented in H5Zlz4.c. Its on-disk
-chunk encoding is described in @ref md_plugins_2LZ4__HDF5__format "the
-LZ4 HDF5 format page". See the @ref md_docs_2compression "compression
-guide" for usage and file-compatibility details.
+chunk encoding is described in
+@ref md_plugins_2LZ4__HDF5__format "the LZ4 HDF5 format page".
+See the @ref md_docs_2compression "compression guide" for usage and
+file-compatibility details.
 
 # NetCDF-4 compression filter comparison
 
@@ -69,6 +70,9 @@ These HDF5 pipeline entries are not compressors but change the result:
 - For maximum portability — a file any NetCDF-4 reader can open with no
   extra software — use **deflate**, which is built into HDF5.
 
+Measured guidance on real data is in
+@ref which_compression "Which compression should I use?" below.
+
 Every filter other than deflate and szip requires the HDF5 plugin that
 implements it to be present on `HDF5_PLUGIN_PATH`, both when writing and
 when a reader later opens the file.
@@ -106,6 +110,128 @@ rate).
 | bzip2 | 9 | 2.06 | 16 | 31 | 1.48 | 12 | 23 |
 | lz4 | 1 | 1.76 | 328 | 1101 | 1.31 | 258 | 953 |
 | lz4 | 9 | 1.76 | 342 | 1103 | 1.27 | 294 | 988 |
+
+## Performance graphs
+
+The graphs below plot the same reference run (all four fields, all
+filters). They were drawn from `reference_results.csv` by
+`performance/plot_compare_filters.py`; run that script on your own
+`compare_filters.csv` to get the same graphs for your machine.
+
+**How the measurements were made.** Each field is one 1 x 768 x 1536
+`NC_FLOAT` array (4,718,592 bytes uncompressed), written as a single
+chunk to a new NetCDF-4 file with fill turned off. *Write throughput*
+is the uncompressed field size divided by the time from `nc_create()`
+to `nc_close()` (define the variable and its filters, `nc_enddef()`,
+`nc_put_var_float()`, close). *Read throughput* is the uncompressed
+size divided by the time from `nc_open()` to `nc_close()` (find the
+variable, `nc_get_var_float()`, close). Both include file open, close
+and metadata costs, not just the compressor. Each setting was run three
+times and the fastest time is used. *Compression ratio* is the
+uncompressed field size divided by the size of the whole file on disk,
+so the "none" points sit just below 1.0 (the file carries a few KB of
+HDF5 metadata). Every run was read back and checked bit-for-bit against
+the original; all filters here are lossless.
+
+**The four fields** come from a NOAA GFS/GDAS surface forecast file:
+
+- `tmp2m`: 2 m air temperature. A smooth, continuous field; typical
+  of most model output.
+- `prate_ave`: average precipitation rate. Noisy and hard to compress.
+- `soilw1`: top-layer soil moisture. Defined over land only, with the
+  fill value over the ocean.
+- `land`: the land/sea mask. A few repeated categorical values, so it
+  compresses very well.
+
+**How to read the graphs.** Each graph has one panel per field. The x
+axis is throughput in MB/s on a logarithmic scale; further right is
+faster. The y axis is the compression ratio; higher is smaller files.
+The y axis is linear, except for `land`, whose ratios span 1 to about
+170 and use a logarithmic scale. The best filters for a field are
+toward the top right of its panel. Each filter has its own colour and
+marker shape (grey circle = none, blue square = deflate, green triangle
+= szip, orange diamond = zstd, purple downward triangle = bzip2, red
+plus = LZ4). The small numbers next to the points are the filter
+levels (for szip, the 32 pixels per block).
+
+### Simple performance graphs
+
+@image html compare_filters_write_simple.png "Figure 1. Compression ratio vs write throughput, fastest level of each filter, shuffle on." width=100%
+
+@image html compare_filters_read_simple.png "Figure 2. Compression ratio vs read throughput, fastest level of each filter, shuffle on." width=100%
+
+*Figures 1 and 2* show one setting per filter so the filters can be
+compared directly. For each filter, the level with the highest write
+throughput averaged over the four fields was chosen, and the same level
+is used in every panel and in both figures: deflate 1, zstd 1, bzip2 1,
+LZ4 9 (LZ4's level is an acceleration setting, so 9 is slightly faster
+than 1 here) and szip with 32 pixels per block (its only setting). The
+shuffle filter is on for every point, including "none", where shuffle
+alone does no compression but still costs time. Figure 1 plots the
+write throughput and Figure 2 the read throughput of exactly the same
+runs, so each point has the same height in both figures.
+
+### Complex performance graphs
+
+@image html compare_filters_write.png "Figure 3. Compression ratio vs write throughput, every filter and level, shuffle off and on." width=100%
+
+@image html compare_filters_read.png "Figure 4. Compression ratio vs read throughput, every filter and level, shuffle off and on." width=100%
+
+*Figures 3 and 4* show every setting that was measured: none, deflate
+levels 1, 5 and 9, szip, zstd levels 1, 3, 9 and 19, bzip2 levels 1
+and 9, and LZ4 levels 1 and 9, each with the shuffle filter off and on.
+Filled markers have shuffle on; open markers have shuffle off. Points
+for the same filter and shuffle setting are joined in level order (solid
+line = shuffle on, dashed line = shuffle off), so each line shows what
+raising the level costs in speed and gains in ratio. Level numbers are
+printed next to the shuffle-on points only. Figure 3 plots write
+throughput and Figure 4 read throughput for the same runs.
+
+## Which compression should I use? {#which_compression}
+
+These results come from one machine and one data set, and your data
+may behave differently. They still support some clear conclusions.
+
+- **Turn on shuffle for continuous floating-point fields.** On `tmp2m`
+  shuffle raised the ratio of every compressor except szip by 35-45%
+  (deflate 1: 1.34 to 1.88; zstd 1: 1.29 to 1.87). LZ4 did not compress
+  `tmp2m` at all without shuffle (1.00) but reached 1.76 with it. On
+  `prate_ave` the gain was 10-18%.
+- **Try shuffle off for masks, categorical fields and mostly-fill
+  fields.** On `land`, shuffle lowered the ratio of deflate, zstd, szip,
+  LZ4 and bzip2 (zstd 1: 115 without shuffle, 88 with), and on `soilw1`
+  it lowered deflate, zstd and szip. It also slows down the fastest
+  filters.
+- **zstd level 1 with shuffle is the best general choice when every
+  reader has the zstd plugin.** It matched deflate 1's ratio (1.87 vs
+  1.88 on `tmp2m`, 1.42 vs 1.40 on `prate_ave`) while writing about 4
+  times faster (254 vs 63 MB/s on `tmp2m`) and reading 2 to 3 times
+  faster (788 vs 356 MB/s).
+- **Use deflate level 1 with shuffle when portability matters most.**
+  Deflate is built into every HDF5 library, so any NetCDF-4 reader can
+  open the file with no plugin. Higher deflate levels are rarely worth
+  it: on `tmp2m`, level 9 gained 2% in ratio (1.92 vs 1.88) but wrote
+  4.5 times slower.
+- **Use LZ4 with shuffle when speed matters more than size**, for
+  example scratch files, checkpoints or data that is read many times.
+  It was the fastest filter for both writing and reading in every
+  field, at a ratio about 6% below zstd 1 on `tmp2m` and 8-11% below on
+  `prate_ave`. Readers need the nep-compress LZ4 plugin.
+- **For the smallest archive files, use zstd level 19 with shuffle.** It
+  writes slowly (7 MB/s on `tmp2m`) but reads as fast as zstd 1, which
+  suits data that is written once and read often. bzip2 gave the
+  highest ratio on `tmp2m` (2.07 vs 1.98) and tied on `prate_ave`, but
+  it read at only 23-38 MB/s, 20-25 times slower than zstd. Choose it
+  only when size matters far more than read time.
+- **Do not combine szip with shuffle.** Shuffle lowered szip's ratio on
+  every field (`tmp2m` 2.03 to 1.83, `prate_ave` 1.27 to 1.15, `soilw1`
+  4.70 to 3.24, `land` 18.1 to 7.75). Without shuffle, szip
+  did well on the smooth `tmp2m` field (2.03, second only to bzip2) but
+  poorly on the other fields.
+- **Check on your own data.** Build with `NEPCOMPRESS_ZSTD_PLUGIN_DIR`
+  set, point `compare_filters` at a file of your own fields (it expects
+  the four variable names above, so adapt `FIELDS` as needed), and
+  plot the CSV with `plot_compare_filters.py`.
 
 # Books
 
