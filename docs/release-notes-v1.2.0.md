@@ -1,0 +1,82 @@
+# nep-compress v1.2.0 - JPEG-LS for Meteosat
+
+nep-compress v1.2.0 adds support for the EUMETSAT JPEG-LS filter
+(HDF5 ID 32018, registered as FCIDECOMP), the compression used for
+Meteosat Third Generation FCI Level-1c imagery. It works the same way
+as BZIP2: an external plugin does the compression and nep-compress
+provides the C and Fortran functions to define and inquire the
+filter, an opt-in build option with a configure-time plugin probe,
+tests, CI coverage and documentation.
+
+## Why JPEG-LS
+
+From [*Earth Observation in Practice: A Mission-by-Mission Guide to Reading Satellite Data with NetCDF and Python*](https://www.amazon.com/dp/B0HJRZ9F7L), by Edward Hartnett:
+
+> EUMETSAT disseminates FCI Level-1c imagery with stronger lossless compression based on the JPEG-LS standard through the CharLS library. JPEG-LS is implemented as a custom HDF5 filter (`H5ZJPEGLS`), not built into standard NetCDF-4 or HDF5 installations. The filename's `special_compression` field identifies these datasets; the product user guide documents which streams and dissemination paths use JPEG-LS.
+>
+> To read JPEG-LS-compressed FCI NetCDF-4 files you must install the `fcidecomp` decompression software from EUMETSAT. `fcidecomp` supplies the `H5ZJPEGLS` HDF5 filter plugin, which the HDF5 library loads automatically when the file is opened. Once the plugin is installed, reads are transparent: `netCDF4.Dataset()` or `h5py.File()` behave as if the data were uncompressed. Without the plugin, accessing a compressed variable fails because the library does not recognise the filter.
+
+## New API
+
+- `int nc_def_var_jpegls(int ncid, int varid, int near)` defines the
+  filter in define mode. The variable must be of type `NC_BYTE`,
+  `NC_UBYTE`, `NC_SHORT` or `NC_USHORT` and rank 2 or 3. If it is not
+  chunked yet, NetCDF-C's default chunk sizes are applied first; the
+  chunks must satisfy the plugin: in rank 3 the first chunk dimension
+  is the component count (1-4), the last two chunk dimensions are each
+  at most 65535, and there must be at least 16 pixels per chunk.
+  `near = 0` is lossless; 1-127 (1-byte types) or 1-255 (2-byte types)
+  selects JPEG-LS near-lossless mode, which is lossy: every decoded
+  value is within `near` of the original.
+- `int nc_inq_var_jpegls(int ncid, int varid, int *jpeglsp, int
+  *nearp)` searches the whole filter pipeline and does not need the
+  plugin. It accepts the 9-parameter define-mode form, the
+  13-parameter form the plugin stores in files (including EUMETSAT FCI
+  files) and the 0-parameter form; any other count returns
+  `NC_EFILTER`.
+- Fortran: `nf90_def_var_jpegls(ncid, varid, near)` and
+  `nf90_inq_var_jpegls(ncid, varid, has, near)`, with the usual
+  1-based `varid`.
+- Define-time validation rejects the types, ranks and chunk shapes the
+  plugin cannot compress, so data is never silently stored
+  uncompressed by an `nc_def_var_jpegls` call that returned
+  `NC_NOERR`.
+
+## Build
+
+- New option `NEPCOMPRESS_BUILD_JPEGLS` (default OFF) builds the C and
+  Fortran JPEG-LS API and tests.
+- New cache path `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` points to a directory
+  holding exactly one 32018 provider (EUMETSAT fcidecomp
+  `libH5Zjpegls.so` or hdf5plugin `libh5fcidecomp.so`). Configuration
+  fails unless a plugin there can both encode and decode.
+- nep-compress still does not build a JPEG-LS plugin; the external
+  plugin defines the format.
+
+## Testing
+
+- New `tst_jpegls` test covers lossless round trips for all four
+  supported types, near-lossless mode, rank-3 variables, the
+  shuffle+JPEG-LS pipeline, rejected arguments and generic filter
+  definitions, and checks HDF5 storage size to catch the plugin's
+  silent raw fallback.
+- New `jpegls_missing_plugin` test checks `NC_ENOFILTER` on define and
+  on reading data when the plugin is absent, while metadata inquiry
+  still works.
+- New `ftst_nep_jpegls` Fortran test covers the Fortran wrappers.
+- The CI matrix gained a `jpegls` setting; three of the four jobs run
+  the JPEG-LS tests with the conda-forge hdf5plugin provider.
+
+## Requirements
+
+Unchanged: CMake 3.18+, NetCDF-C 4.10.1+, HDF5 1.14+ (C and HL),
+liblz4 for LZ4, and NetCDF-Fortran for the Fortran wrappers. BZIP2
+still needs an external HDF5 plugin for ID 307. JPEG-LS, when enabled,
+needs an external HDF5 plugin for ID 32018.
+
+## Upgrading
+
+No changes for existing users: JPEG-LS is off by default and adds two
+exported C symbols, an additive change. `SOVERSION` stays 1.
+
+Author: Edward Hartnett, Intelligent Data Design, Inc.

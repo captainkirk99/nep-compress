@@ -11,7 +11,10 @@ format readers. NEP remains the project for UDF formats and NEXTCDF-4.
 nep-compress builds the LZ4 HDF5 plugin (`libh5lz4`, filter ID 32004)
 itself. For BZIP2 (filter ID 307) it builds the Fortran API but
 requires an external HDF5 plugin that provides ID 307 for both writing
-and reading; the C functions are NetCDF-C's own.
+and reading; the C functions are NetCDF-C's own. For JPEG-LS (filter
+ID 32018), the EUMETSAT FCIDECOMP filter used for Meteosat FCI
+imagery, nep-compress provides the C and Fortran API and likewise
+requires an external plugin.
 
 # Provided filters
 
@@ -21,10 +24,13 @@ The C API is declared in nep_compress.h:
 - `nc_def_var_bzip2`, `nc_inq_var_bzip2` — BZIP2, filter ID 307
   (#BZIP2_ID); these are NetCDF-C's functions, declared in
   `netcdf_filter.h`.
+- nc_def_var_jpegls(), nc_inq_var_jpegls() — JPEG-LS, filter ID 32018
+  (#JPEGLS_ID).
 
 The Fortran module `nep_compress` provides the equivalents
-nf90_def_var_lz4(), nf90_inq_var_lz4(), nf90_def_var_bzip2(), and
-nf90_inq_var_bzip2().
+nf90_def_var_lz4(), nf90_inq_var_lz4(), nf90_def_var_bzip2(),
+nf90_inq_var_bzip2(), nf90_def_var_jpegls(), and
+nf90_inq_var_jpegls().
 
 The LZ4 filter plugin itself is implemented in H5Zlz4.c. Its on-disk
 chunk encoding is described in
@@ -44,6 +50,7 @@ chunked storage. The filters available to NetCDF-4 users:
 | zstandard | 32015 | NetCDF-C plugin `lib__nch5zstd` | Yes | `nc_def_var_zstandard(ncid, varid, level)` | levels -131072 to 22 | Wide range from fast to high ratio | Yes |
 | bzip2 | 307 | External HDF5 plugin (NetCDF-C ships `lib__nch5bzip2`; other providers exist) | Yes | `nc_def_var_bzip2(ncid, varid, level)` (NetCDF-C) | level 1-9 (block size 100-900 KB) | Favors ratio over speed | Yes |
 | LZ4 | 32004 | nep-compress plugin `libh5lz4` | Yes | `nc_def_var_lz4(ncid, varid, level)` | level 1-9 (acceleration parameter) | Favors speed | Yes |
+| JPEG-LS | 32018 | External EUMETSAT fcidecomp plugin (also in hdf5plugin) | Yes | `nc_def_var_jpegls(ncid, varid, near)` | near 0 (lossless) or 1-127 / 1-255; 8/16-bit integer types, rank 2-3 | Strong on integer imagery; used for Meteosat FCI L1c | Yes when near = 0; lossy when near > 0 |
 
 Note that `nc_def_var_zstandard()` does nothing when NetCDF-C was built
 without zstd; check `NC_HAS_ZSTD` or `nc-config --has-zstd` before
@@ -69,6 +76,9 @@ These HDF5 pipeline entries are not compressors but change the result:
 - For the smallest files, use **BZIP2** or a high **zstandard** level.
 - For maximum portability — a file any NetCDF-4 reader can open with no
   extra software — use **deflate**, which is built into HDF5.
+- For 8- and 16-bit integer imagery, and to write or match EUMETSAT FCI
+  files, use **JPEG-LS**. It is not measured by
+  `perf_compare_filters`, because that test's fields are float.
 
 Measured guidance on real data is in
 @ref which_compression "Which compression should I use?" below.

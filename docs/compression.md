@@ -1,6 +1,6 @@
 # Compression Filters
 
-nep-compress provides lossless LZ4 and BZIP2 filter APIs for chunked
+nep-compress provides LZ4, BZIP2 and JPEG-LS filter APIs for chunked
 NetCDF-4/HDF5 variables. HDF5 stores the filter ID and parameters in
 each variable's filter pipeline; the corresponding plugin must be
 available to decode existing compressed data, even if the application
@@ -42,11 +42,54 @@ installation, dependencies and a BZIP2 plugin provider.
 - `nc_inq_var_bzip2(ncid, varid, &present, &level)` searches the filter
   IDs; either output pointer may be NULL.
 
+## JPEG-LS: satellite imagery (EUMETSAT FCI)
+
+From [*Earth Observation in Practice: A Mission-by-Mission Guide to Reading Satellite Data with NetCDF and Python*](https://www.amazon.com/dp/B0HJRZ9F7L), by Edward Hartnett:
+
+> EUMETSAT disseminates FCI Level-1c imagery with stronger lossless compression based on the JPEG-LS standard through the CharLS library. JPEG-LS is implemented as a custom HDF5 filter (`H5ZJPEGLS`), not built into standard NetCDF-4 or HDF5 installations. The filename's `special_compression` field identifies these datasets; the product user guide documents which streams and dissemination paths use JPEG-LS.
+>
+> To read JPEG-LS-compressed FCI NetCDF-4 files you must install the `fcidecomp` decompression software from EUMETSAT. `fcidecomp` supplies the `H5ZJPEGLS` HDF5 filter plugin, which the HDF5 library loads automatically when the file is opened. Once the plugin is installed, reads are transparent: `netCDF4.Dataset()` or `h5py.File()` behave as if the data were uncompressed. Without the plugin, accessing a compressed variable fails because the library does not recognise the filter.
+
+- Filter ID: **32018** (registered as FCIDECOMP).
+- nep-compress does **not** build a JPEG-LS plugin. Get one from
+  EUMETSAT fcidecomp (`libH5Zjpegls.so`; conda `-c eumetsat fcidecomp`
+  or a source build) or from hdf5plugin (`libh5fcidecomp.so`), then
+  configure with `NEPCOMPRESS_BUILD_JPEGLS=ON` and
+  `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` pointing at a directory that holds
+  exactly one 32018 provider.
+- `nc_def_var_jpegls(ncid, varid, near)` enables the filter. The
+  variable must be of type `NC_BYTE`, `NC_UBYTE`, `NC_SHORT` or
+  `NC_USHORT` and rank 2 or 3. If it is not chunked yet, NetCDF-C's
+  default chunk sizes are applied first; the chunks must then satisfy
+  the plugin: in rank 3 the first chunk dimension is the component
+  count (1-4), the last two chunk dimensions are each at most 65535,
+  and there must be at least 16 pixels per chunk. `near = 0` is
+  lossless; `near > 0` (1-127 for 1-byte types, 1-255 for 2-byte
+  types) is JPEG-LS near-lossless mode, which is **lossy**: every
+  decoded value is within `near` of the original.
+- `nc_inq_var_jpegls(ncid, varid, &present, &near)` queries settings.
+  It searches the whole pipeline and does not need the plugin. It
+  handles the 13-parameter form the plugin stores in files, including
+  EUMETSAT FCI files, as well as the 9-parameter define-mode form.
+- The plugin falls back to raw storage, with only stderr messages,
+  when a chunk does not compress or cannot be handled. Unsupported
+  types and chunk shapes are rejected by `nc_def_var_jpegls` for this
+  reason.
+- Reading an FCI file needs no nep-compress call, only the plugin on
+  `HDF5_PLUGIN_PATH`. Inspect the stored filter with
+  `ncdump -hs file.nc | grep _Filter` and decompress a copy with
+  `nccopy -F none in.nc out.nc`.
+- FCI files store variables as 2-D `ushort`/`ubyte` with chunks such
+  as 601 x 22272.
+
 Both definitions return `NC_ENOFILTER` if the plugin is unavailable
 (checked first) and `NC_EINVAL` for an invalid level. Both return a
 NetCDF error code for other failures. `nc_inq_var_bzip2` also returns
 `NC_ENOFILTER` when the plugin is missing; `nc_inq_var_lz4` does not
-need the plugin at all. Apply a filter before writing data, on a
+need the plugin at all. `nc_def_var_jpegls` checks availability first
+(`NC_ENOFILTER`), then returns `NC_EBADTYPE` for an unsupported type
+or `NC_EINVAL` for a bad rank, `near` or chunk shape;
+`nc_inq_var_jpegls`, like `nc_inq_var_lz4`, does not need the plugin. Apply a filter before writing data, on a
 NetCDF-4 variable; use `nc_def_var_chunking` to control chunk shape.
 The C API is declared by `<nep_compress.h>` and supplied by
 `libnepcompress`:
@@ -83,7 +126,8 @@ file is not automatically readable without a decoder.
 Keep exactly one provider per filter ID on `HDF5_PLUGIN_PATH`. When
 two plugins register the same ID, which one HDF5 loads is not
 defined. In particular, the BZIP2 directory must hold one ID 307
-provider and no ID 32004 (LZ4) provider.
+provider and no ID 32004 (LZ4) provider, and the JPEG-LS directory
+must hold exactly one ID 32018 provider.
 
 ## Benchmarks and compatibility
 
@@ -106,6 +150,17 @@ definitions. Tests check its own write/reopen/read values and filter
 metadata, plus optional reference LZ4 plugin checks. Interchange with
 files written through old NEP, in either direction, is not a release
 requirement; matching IDs alone do not establish such compatibility.
+For JPEG-LS, nep-compress writes the same 32018 parameter layout as
+EUMETSAT's fcidecomp, because the plugin doing the work is
+fcidecomp's own.
+
+## Changes in 1.2.0
+
+- New JPEG-LS API: `nc_def_var_jpegls` and `nc_inq_var_jpegls` in C,
+  `nf90_def_var_jpegls` and `nf90_inq_var_jpegls` in Fortran, built
+  with the new `NEPCOMPRESS_BUILD_JPEGLS` option and
+  `NEPCOMPRESS_JPEGLS_PLUGIN_DIR`, plus tests. No behavior change for
+  LZ4 or BZIP2.
 
 ## Changes in 1.1.0
 

@@ -1,14 +1,16 @@
 # Roadmap
 
-## V1.2.0 Compression Filter for Mereosat
+## V1.2.0 Compression Filter for Meteosat
 
-From "Earth Observation in Practice":
+### Sprint 1: Add JPEG-LS Filter Support
+- EUMETSAT JPEG-LS (HDF5 ID 32018, FCIDECOMP) through an external plugin (fcidecomp or hdf5plugin `libh5fcidecomp.so`), like BZIP2: `NEPCOMPRESS_BUILD_JPEGLS` (default OFF) and `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` with a configure probe.
+- C `nc_def_var_jpegls(ncid, varid, near)` / `nc_inq_var_jpegls(ncid, varid, &has, &near)` plus Fortran `nf90_*_jpegls`. `near` 0 is lossless; `near` > 0 is near-lossless (lossy).
+- The define call returns `NC_ENOFILTER` first, `NC_EBADTYPE` for anything other than byte/ubyte/short/ushort, and `NC_EINVAL` for a bad rank, `near` or chunk shape, so data is never silently stored raw. The inquiry handles the 13-parameter form in FCI files.
+- Synthetic-data tests only (`tst_jpegls`, `jpegls_missing_plugin`, `ftst_nep_jpegls`). CI uses the hdf5plugin directory.
+- The "Earth Observation in Practice" quote is kept word for word in `docs/compression.md` and `docs/release-notes-v1.2.0.md`. A JPEG-LS row is added to the mainpage table. Version 1.2.0, SOVERSION 1.
+- Out of scope: building our own CharLS plugin, committed or downloaded FCI data, JPEG-LS in `perf_compare_filters`, other JPEG-LS parameters.
 
-EUMETSAT disseminates FCI Level-1c imagery with stronger lossless compression based on the JPEG-LS standard through the CharLS library. JPEG-LS is implemented as a custom HDF5 filter (`H5ZJPEGLS`), not built into standard NetCDF-4 or HDF5 installations. The filename's `special_compression` field identifies these datasets; the product user guide documents which streams and dissemination paths use JPEG-LS.
-
-To read JPEG-LS-compressed FCI NetCDF-4 files you must install the `fcidecomp` decompression software from EUMETSAT. `fcidecomp` supplies the `H5ZJPEGLS` HDF5 filter plugin, which the HDF5 library loads automatically when the file is opened. Once the plugin is installed, reads are transparent: `netCDF4.Dataset()` or `h5py.File()` behave as if the data were uncompressed. Without the plugin, accessing a compressed variable fails because the library does not recognise the filter.
-
-- We need to accomodate this filter in nep-compress.
+Plan: [docs/plans/v1.2.0-sprint1-add-jpeg-ls-filter-support.md](plans/v1.2.0-sprint1-add-jpeg-ls-filter-support.md)
 
 ## V1.1.0 - Documentation
 
