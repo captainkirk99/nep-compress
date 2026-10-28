@@ -65,3 +65,5 @@ spack-build-*
 spack-configure-args.txt
 build-linux-*
 spack/ci-local/
+.ci-spack/
+.ci-spack-packages/

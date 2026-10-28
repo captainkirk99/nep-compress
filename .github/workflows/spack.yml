@@ -15,6 +15,9 @@ jobs:
       - name: Set up Spack
         uses: spack/setup-spack@v3
         with:
+          # The default ./spack would overwrite this repo's spack/ directory.
+          spack_path: .ci-spack
+          packages_path: .ci-spack-packages
           spack_ref: v1.2.2
           packages_ref: v2026.10.0
           buildcache: true
@@ -66,4 +69,4 @@ jobs:
           name: spack-logs
           path: |
             /opt/spack/**/.spack/spack-build-*.txt*
-            /tmp/**/spack-stage/**/spack-build-*.txt*
+            /tmp/runner/spack-stage/**/spack-build-*.txt*
