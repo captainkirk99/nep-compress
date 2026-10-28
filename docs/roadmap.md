@@ -12,6 +12,21 @@
 
 Plan: [docs/plans/v1.2.0-sprint1-add-jpeg-ls-filter-support.md](plans/v1.2.0-sprint1-add-jpeg-ls-filter-support.md)
 
+### Sprint 2: Spack Support
+- `nep-compress` Spack recipe in an overlay repo, `spack/repos/spack_repo/nepcompress`: versions `main` and `1.1.0`; variants `lz4`, `bzip2` (uses NetCDF-C's plugin directory) and `fortran`, all on by default; no MPI constraint. `spack load` adds the LZ4 plugin directory to `HDF5_PLUGIN_PATH`.
+- Minimum NetCDF-C lowered to 4.10.0, which is what upstream Spack has. `perf_compare_filters` is skipped on NetCDF-C older than 4.10.1.
+- The consumer test project no longer requires Fortran, and is used as a Spack stand-alone test.
+- New `spack.yml` CI job: builds the checkout with `spack develop` on `netcdf-c+mpi ^mpich`, runs ctest through `--test=root`, then `spack test run`.
+- Submit an identical copy to https://github.com/spack/spack-packages as "nep-compress: new package". `docs/spack-plan.md` documents the submission, review, release-bump and netcdf-c 4.10.1 follow-up steps.
+- Out of scope: a `jpegls` variant, the `1.2.0` version line (added after the tag), `1.0.0`, a `~mpi` CI job.
+
+Plan: [docs/plans/v1.2.0-sprint2-spack-support.md](plans/v1.2.0-sprint2-spack-support.md)
+
+### Sprint 3: Conda Support
+- Add conda support.
+- Test with CI.
+- Add to condaforge.
+
 ## V1.1.0 - Documentation
 
 ### Sprint 1: Documentation
