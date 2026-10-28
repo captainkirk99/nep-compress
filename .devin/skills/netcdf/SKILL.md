@@ -372,3 +372,7 @@ static size_t filter_func(unsigned flags, size_t cd_nelmts, const unsigned cd_va
 - When comparing filters (zlib, szip, zstd, bzip2, blosc, LZ4), check
   availability with `nc_inq_filter_avail` first and skip unavailable ones
   rather than relying on wrappers that may silently no-op.
+- The minimum NetCDF-C is 4.10.0, and CMake ignores
+  `NEPCOMPRESS_ZSTD_PLUGIN_DIR` below 4.10.1.
+- In Spack, NetCDF-C's `prefix.plugins` holds exactly one 307 and one
+  32015 provider, and the `nep-compress` recipe uses it for both.

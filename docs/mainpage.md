@@ -239,7 +239,7 @@ may behave differently. They still support some clear conclusions.
   did well on the smooth `tmp2m` field (2.03, second only to bzip2) but
   poorly on the other fields.
 - **Check on your own data.** Build with `NEPCOMPRESS_ZSTD_PLUGIN_DIR`
-  set, point `compare_filters` at a file of your own fields (it expects
+  set (NetCDF-C 4.10.1 or later), point `compare_filters` at a file of your own fields (it expects
   the four variable names above, so adapt `FIELDS` as needed), and
   plot the CSV with `plot_compare_filters.py`.
 

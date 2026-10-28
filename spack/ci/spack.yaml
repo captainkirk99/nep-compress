@@ -1,0 +1,19 @@
+spack:
+  specs:
+  - nep-compress@main +lz4 +bzip2 +fortran ^netcdf-c+mpi ^mpich
+  repos:
+    nepcompress: ../repos/spack_repo/nepcompress
+  develop:
+    nep-compress:
+      spec: nep-compress@=main
+      path: ../..
+  view: false
+  concretizer:
+    unify: true
+  config:
+    install_tree:
+      root: /opt/spack
+      padded_length: 128
+  packages:
+    all:
+      require: target=x86_64_v3

@@ -137,7 +137,9 @@ Run them manually to obtain measurements for your machine; they are not
 part of regular CTest. They do not guarantee specific speedups or ratios.
 
 The `perf_compare_filters` test in `performance/` does run under CTest
-when `NEPCOMPRESS_ZSTD_PLUGIN_DIR` is set. It rewrites four real GDAS
+when `NEPCOMPRESS_ZSTD_PLUGIN_DIR` is set and NetCDF-C is 4.10.1 or
+later (4.10.1 fixed an input-length bug in NetCDF-C's zstd plugin). It
+rewrites four real GDAS
 surface fields with every available lossless filter, checks each round
 trip bit-exactly and reports size, ratio and write/read throughput as
 CSV and a table. Reference numbers from the development machine are in
@@ -161,6 +163,9 @@ fcidecomp's own.
   with the new `NEPCOMPRESS_BUILD_JPEGLS` option and
   `NEPCOMPRESS_JPEGLS_PLUGIN_DIR`, plus tests. No behavior change for
   LZ4 or BZIP2.
+- The minimum NetCDF-C is now 4.10.0. `perf_compare_filters` is
+  skipped on NetCDF-C older than 4.10.1.
+- A Spack package `nep-compress` (see the README).
 
 ## Changes in 1.1.0
 

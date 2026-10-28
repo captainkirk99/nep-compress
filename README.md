@@ -41,7 +41,8 @@ the C/Fortran API and likewise requires an **external JPEG-LS plugin**
 
 ## Dependencies
 
-- CMake 3.18+, a C compiler, pkg-config, NetCDF-C 4.10.1+, HDF5 1.14+
+- CMake 3.18+, a C compiler, pkg-config, NetCDF-C 4.10.0+ (4.10.1+ for
+  the `perf_compare_filters` test), HDF5 1.14+
   with C/HL libraries, and liblz4 when LZ4 is enabled.
 - A Fortran compiler and NetCDF-Fortran when `NEPCOMPRESS_ENABLE_FORTRAN=ON`
   (the default). These must use the same NetCDF-C/HDF5 installation.
@@ -129,12 +130,34 @@ equivalent if a custom NetCDF or HDF5 is installed.
 | `NEPCOMPRESS_BZIP2_PLUGIN_DIR` | empty | Directory to probe for BZIP2 when enabled |
 | `NEPCOMPRESS_BUILD_JPEGLS` | OFF | Build the JPEG-LS (ID 32018) API and tests (requires an external EUMETSAT fcidecomp HDF5 plugin) |
 | `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` | empty | Directory to probe for JPEG-LS (32018) when enabled |
-| `NEPCOMPRESS_ZSTD_PLUGIN_DIR` | empty | zstd (32015) plugin directory; enables the `perf_compare_filters` test |
+| `NEPCOMPRESS_ZSTD_PLUGIN_DIR` | empty | zstd (32015) plugin directory; enables the `perf_compare_filters` test (ignored with NetCDF-C older than 4.10.1) |
 | `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
 | `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
 | `BUILD_TESTING` | ON | Register C, HDF5 and optional Fortran tests |
 | `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` | empty | Run optional read/write tests with an older LZ4 plugin |
 | `NEPCOMPRESS_BUILD_DOCS` | OFF | Add a `docs` target that builds Doxygen HTML documentation |
+
+## Install with Spack
+
+```sh
+# Once the package is in spack/spack-packages:
+spack install nep-compress
+# Until then, from a clone of this repository:
+spack repo add spack/repos/spack_repo/nepcompress
+spack install nep-compress
+spack load nep-compress
+```
+
+The Spack package has three variants, all on by default: `lz4` (the
+LZ4 API and HDF5 filter plugin), `bzip2` (the Fortran BZIP2 API and
+tests) and `fortran` (the Fortran wrappers). `+bzip2` uses NetCDF-C's
+own BZIP2 plugin, so it requires `netcdf-c+shared`. `spack load
+nep-compress` puts nep-compress's LZ4 plugin directory and NetCDF-C's
+plugin directory on `HDF5_PLUGIN_PATH`. JPEG-LS is not available
+through Spack. Submission to spack/spack-packages is in progress; the
+upstream PR link will appear here once it is open.
+
+Maintainers: see [docs/spack-plan.md](docs/spack-plan.md).
 
 ## Using the libraries
 

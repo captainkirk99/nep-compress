@@ -6,7 +6,8 @@ Meteosat Third Generation FCI Level-1c imagery. It works the same way
 as BZIP2: an external plugin does the compression and nep-compress
 provides the C and Fortran functions to define and inquire the
 filter, an opt-in build option with a configure-time plugin probe,
-tests, CI coverage and documentation.
+tests, CI coverage and documentation. v1.2.0 also adds a Spack package
+recipe and a CI job that builds and tests nep-compress through Spack.
 
 ## Why JPEG-LS
 
@@ -53,6 +54,16 @@ From [*Earth Observation in Practice: A Mission-by-Mission Guide to Reading Sate
 - nep-compress still does not build a JPEG-LS plugin; the external
   plugin defines the format.
 
+## Spack
+
+nep-compress can be installed with Spack as the package `nep-compress`,
+with variants `lz4`, `bzip2` and `fortran` (all on by default). Until
+the recipe lands in spack/spack-packages, use the overlay repository in
+this repo: `spack repo add spack/repos/spack_repo/nepcompress`, then
+`spack install nep-compress`. For the status of the upstream
+submission, see [spack-plan.md](spack-plan.md) and the README "Install with Spack"
+section for the current status.
+
 ## Testing
 
 - New `tst_jpegls` test covers lossless round trips for all four
@@ -66,10 +77,14 @@ From [*Earth Observation in Practice: A Mission-by-Mission Guide to Reading Sate
 - New `ftst_nep_jpegls` Fortran test covers the Fortran wrappers.
 - The CI matrix gained a `jpegls` setting; three of the four jobs run
   the JPEG-LS tests with the conda-forge hdf5plugin provider.
+- A new `spack` CI job builds the checkout through the Spack recipe on
+  an MPICH NetCDF-C 4.10.0 stack, runs the full CTest suite and a
+  `spack test run` stand-alone test.
 
 ## Requirements
 
-Unchanged: CMake 3.18+, NetCDF-C 4.10.1+, HDF5 1.14+ (C and HL),
+CMake 3.18+, NetCDF-C 4.10.0+ (lowered from 4.10.1;
+`perf_compare_filters` still needs 4.10.1), HDF5 1.14+ (C and HL),
 liblz4 for LZ4, and NetCDF-Fortran for the Fortran wrappers. BZIP2
 still needs an external HDF5 plugin for ID 307. JPEG-LS, when enabled,
 needs an external HDF5 plugin for ID 32018.

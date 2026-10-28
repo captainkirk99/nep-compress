@@ -22,7 +22,7 @@ if(NOT NEPCOMPRESS_BUILD_LZ4 AND NOT NEPCOMPRESS_BUILD_BZIP2 AND NOT NEPCOMPRESS
 endif()
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.1)
+pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.0)
 # HDF5 2.x package configs reject a 1.14 minimum-version request even though
 # the installed library is newer. The module finder checks the actual version
 # and honors HDF5_ROOT instead of a stale cached HDF5_DIR.
@@ -74,6 +74,14 @@ if(NEPCOMPRESS_BUILD_JPEGLS)
         message(FATAL_ERROR "Set NEPCOMPRESS_JPEGLS_PLUGIN_DIR to a directory with an HDF5 filter 32018 (JPEG-LS) plugin")
     endif()
     nepc_require_filter_plugin(32018 "${NEPCOMPRESS_JPEGLS_PLUGIN_DIR}" NEPCOMPRESS_JPEGLS_PLUGIN_OK)
+endif()
+
+# NetCDF-C fixed an input-length bug in its zstd plugin in 4.10.1;
+# perf_compare_filters reads a zstd-compressed sample, so it needs
+# 4.10.1 or later.
+if(NEPCOMPRESS_ZSTD_PLUGIN_DIR AND NETCDF_VERSION VERSION_LESS 4.10.1)
+    message(STATUS "NetCDF-C ${NETCDF_VERSION} is older than 4.10.1; ignoring NEPCOMPRESS_ZSTD_PLUGIN_DIR and skipping perf_compare_filters")
+    set(NEPCOMPRESS_ZSTD_PLUGIN_DIR "")
 endif()
 
 if(NEPCOMPRESS_ZSTD_PLUGIN_DIR)

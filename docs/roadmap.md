@@ -27,6 +27,13 @@ Plan: [docs/plans/v1.2.0-sprint2-spack-support.md](plans/v1.2.0-sprint2-spack-su
 - Test with CI.
 - Add to condaforge.
 
+### Sprint 4: Extended Abstract describing nep-compress
+- In docs/nep-compress-abstract.md
+- Describe v1.2.0 as the current release. The abstract document will be released with the v1.2.0 release.
+- Use this for an example: https://github.com/Intelligent-Data-Design-Inc/NEP/blob/main/docs/NEP_abstract.md
+- Include the simple charts from docs/images along with detailed description of them with conclusions about the best compression to use.
+
+
 ## V1.1.0 - Documentation
 
 ### Sprint 1: Documentation
