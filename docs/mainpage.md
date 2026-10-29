@@ -14,7 +14,8 @@ requires an external HDF5 plugin that provides ID 307 for both writing
 and reading; the C functions are NetCDF-C's own. For JPEG-LS (filter
 ID 32018), the EUMETSAT FCIDECOMP filter used for Meteosat FCI
 imagery, nep-compress provides the C and Fortran API and likewise
-requires an external plugin.
+requires an external plugin. The [extended abstract](https://github.com/captainkirk99/nep-compress/blob/main/docs/nep-compress-abstract.md)
+describes the package and its measured compression guidance.
 
 # Provided filters
 

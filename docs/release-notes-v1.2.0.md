@@ -9,6 +9,8 @@ filter, an opt-in build option with a configure-time plugin probe,
 tests, CI coverage and documentation. v1.2.0 also adds a Spack package
 recipe and a CI job that builds and tests nep-compress through Spack,
 plus a conda-forge recipe and a CI job that builds the conda package.
+An extended abstract, [nep-compress-abstract.md](nep-compress-abstract.md),
+describes v1.2.0 and its measured compression guidance.
 
 ## Why JPEG-LS
 
@@ -77,6 +79,13 @@ needed; it cannot be installed together with
 `hdf5-external-filter-plugins-lz4`, a second 32004 provider. See
 [conda-plan.md](conda-plan.md) and the README "Install with conda"
 section for the current status.
+
+## Documentation
+
+An extended abstract, [nep-compress-abstract.md](nep-compress-abstract.md),
+describes nep-compress 1.2.0: the LZ4, BZIP2 and JPEG-LS filters, the
+compression benchmark and its measured guidance, and how to build and
+install the package.
 
 ## Testing
 

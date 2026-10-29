@@ -2,13 +2,6 @@
 
 nep-compress contains additional compression filters for netCDF.
 
-NetCDF ships with support for zlib, szlib, bzip2, and zstd, added in
-netcdf-c-4.9.0 (2022).
-
-Of those choices, zstd is the clear winner for most users. It's much
-faster than any of the others. But there are other, even more
-attractive compression choices available with nep-compress.
-
 ## Compression Filters in nep-compress
 
 nep-compress supports the following additional compression filters for netCDF:
@@ -30,6 +23,8 @@ programs. Earth science formats like GeoTIFF and GRIB2, but also space
 science formats CDF, FITS, and PDS 3/4, as well as medical images and
 protien folding database formats. See the project website for more info.
 
+## Implementation Details
+
 nep-compress **builds an LZ4 HDF5 plugin** (`libh5lz4.so`, filter ID 32004).
 For BZIP2 (ID 307), it builds the C/Fortran API but requires a compatible
 **external HDF5 BZIP2 plugin** for both writing and reading. `libbz2` alone
@@ -38,6 +33,8 @@ the C/Fortran API and likewise requires an **external JPEG-LS plugin**
 (EUMETSAT fcidecomp or hdf5plugin); JPEG-LS is also OFF by default.
 
 **Documentation:** https://captainkirk99.github.io/nep-compress/
+
+**Extended abstract:** [docs/nep-compress-abstract.md](docs/nep-compress-abstract.md)
 
 ## Dependencies
 

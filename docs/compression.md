@@ -169,6 +169,7 @@ fcidecomp's own.
 - A conda-forge recipe `nep-compress` (see the README); its LZ4 plugin
   is installed in conda HDF5's default plugin directory as
   `lib/hdf5/plugin/libh5lz4_nepcompress.so`.
+- An extended abstract (`docs/nep-compress-abstract.md`).
 
 ## Changes in 1.1.0
 

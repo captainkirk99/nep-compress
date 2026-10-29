@@ -32,10 +32,12 @@ Plan: [docs/plans/v1.2.0-sprint2-spack-support.md](plans/v1.2.0-sprint2-spack-su
 Plan: [docs/plans/v1.2.0-sprint3-conda-support.md](plans/v1.2.0-sprint3-conda-support.md)
 
 ### Sprint 4: Extended Abstract describing nep-compress
-- In docs/nep-compress-abstract.md
-- Describe v1.2.0 as the current release. The abstract1a 2a 3a 4a 5c document will be released with the v1.2.0 release.
-- Use this for an example: https://github.com/Intelligent-Data-Design-Inc/NEP/blob/main/docs/NEP_abstract.md
-- Include the simple charts from docs/images along with detailed description of them with conclusions about the best compression to use.
+- New `docs/nep-compress-abstract.md`, modeled on NEP's `docs/NEP_abstract.md` and limited to compression: Abstract, Introduction, Compression (built-in filters, LZ4, BZIP2, JPEG-LS), Performance, Building and Installing, Summary, References. Describes v1.2.0 as the current release.
+- Both simple charts (`compare_filters_{write,read}_simple.png`), each with a detailed description, a four-field shuffle-on table copied from `performance/reference_results.csv`, and conclusions consistent with the mainpage's "Which compression should I use?".
+- Repo-only Markdown (not in Doxygen), shipped in the `v1.2.0` tag and linked from the README, the mainpage and the v1.2.0 release notes. The Handbook link is `dp/B0H7Q49MPS`.
+- Out of scope: a PDF or release asset, publishing on gh-pages, the complex charts, new measurements, JPEG-LS benchmarks, rewording the mainpage.
+
+Plan: [docs/plans/v1.2.0-sprint4-extended-abstract.md](plans/v1.2.0-sprint4-extended-abstract.md)
 
 
 ## V1.1.0 - Documentation
