@@ -129,7 +129,7 @@ pipeline` if needed. The PR merges once a maintainer approves it.
 - Once upstream PR #6569 merges, bump `packages_ref` in
   `.github/workflows/spack.yml` to a spack-packages tag that includes
   it.
-- Change the `skipping perf_compare_filters` zgrep in that workflow to
+- Change the `skipping perf_compare_filters` grep in that workflow to
   a check that `perf_compare_filters` ran.
 - No recipe change is needed.
 

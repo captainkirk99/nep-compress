@@ -55,11 +55,12 @@ jobs:
           set -euo pipefail
           spack -e spack/ci install --test=root --verbose nep-compress
           prefix="$(spack -e spack/ci location -i nep-compress)"
-          log="${prefix}/.spack/spack-build-out.txt.gz"
+          log="${RUNNER_TEMP}/spack-build-out.txt"
+          gzip -dc "${prefix}/.spack/spack-build-out.txt.gz" > "${log}"
           test -f "${prefix}/lib/plugin/libh5lz4.so"
-          zgrep -q 'tst_lz4_filters' "${log}"
-          zgrep -q 'ftst_nep_bzip2' "${log}"
-          zgrep -q 'skipping perf_compare_filters' "${log}"
+          grep -q 'tst_lz4_filters' "${log}"
+          grep -q 'ftst_nep_bzip2' "${log}"
+          grep -q 'skipping perf_compare_filters' "${log}"
           spack -e spack/ci test run nep-compress
 
       - name: Upload Spack logs
