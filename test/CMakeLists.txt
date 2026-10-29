@@ -29,6 +29,15 @@ if(NEPCOMPRESS_BUILD_BZIP2)
     add_compression_test(tst_bzip2 tst_bzip2.c "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}")
     add_compression_test(tst_h_bzip2 tst_h_bzip2.c "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}")
 endif()
+if(NEPCOMPRESS_BUILD_JPEGLS)
+    add_compression_test(tst_jpegls tst_jpegls.c "${NEPCOMPRESS_JPEGLS_PLUGIN_DIR}")
+    set_tests_properties(tst_jpegls PROPERTIES FIXTURES_SETUP jpegls_file)
+    add_test(NAME jpegls_missing_plugin COMMAND tst_jpegls missing)
+    set_tests_properties(jpegls_missing_plugin PROPERTIES
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tst_jpegls"
+        FIXTURES_REQUIRED jpegls_file
+        ENVIRONMENT "HDF5_PLUGIN_PATH=${PROJECT_BINARY_DIR}/missing;NETCDF_RC=${CMAKE_CURRENT_BINARY_DIR}/tst_jpegls;NCRCENV_RC=${PROJECT_BINARY_DIR}/no.ncrc")
+endif()
 
 if(NEPCOMPRESS_ENABLE_FORTRAN)
     if(NEPCOMPRESS_BUILD_LZ4)
@@ -51,6 +60,16 @@ if(NEPCOMPRESS_ENABLE_FORTRAN)
         set_tests_properties(ftst_nep_bzip2 PROPERTIES
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_bzip2"
             ENVIRONMENT "HDF5_PLUGIN_PATH=${NEPCOMPRESS_BZIP2_PLUGIN_DIR};NETCDF_RC=${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_bzip2;NCRCENV_RC=${PROJECT_BINARY_DIR}/no.ncrc")
+    endif()
+    if(NEPCOMPRESS_BUILD_JPEGLS)
+        add_executable(ftst_nep_jpegls ftst_nep_jpegls.F90)
+        set_target_properties(ftst_nep_jpegls PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+        target_link_libraries(ftst_nep_jpegls PRIVATE nepcompressf ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_jpegls")
+        add_test(NAME ftst_nep_jpegls COMMAND ftst_nep_jpegls)
+        set_tests_properties(ftst_nep_jpegls PROPERTIES
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_jpegls"
+            ENVIRONMENT "HDF5_PLUGIN_PATH=${NEPCOMPRESS_JPEGLS_PLUGIN_DIR};NETCDF_RC=${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_jpegls;NCRCENV_RC=${PROJECT_BINARY_DIR}/no.ncrc")
     endif()
 endif()
 

@@ -1,0 +1,73 @@
+name: Spack package
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  spack:
+    runs-on: ubuntu-latest
+    name: spack
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Spack
+        uses: spack/setup-spack@v3
+        with:
+          # The default ./spack would overwrite this repo's spack/ directory.
+          spack_path: .ci-spack
+          packages_path: .ci-spack-packages
+          spack_ref: v1.2.2
+          packages_ref: v2026.10.0
+          buildcache: true
+
+      - name: Concretize
+        shell: spack-bash {0}
+        run: |
+          set -euo pipefail
+          spack compiler find
+          spack -e spack/ci concretize -f
+          spack -e spack/ci find -c
+
+      - name: Restore dependency cache
+        id: deps-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /opt/spack
+          key: spack-deps-${{ hashFiles('spack/ci/spack.lock') }}
+          restore-keys: spack-deps-
+
+      - name: Install dependencies
+        shell: spack-bash {0}
+        run: spack -e spack/ci install --fail-fast --only dependencies
+
+      - name: Save dependency cache
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /opt/spack
+          key: spack-deps-${{ hashFiles('spack/ci/spack.lock') }}
+
+      - name: Build and test nep-compress
+        shell: spack-bash {0}
+        run: |
+          set -euo pipefail
+          spack -e spack/ci install --test=root --verbose nep-compress
+          prefix="$(spack -e spack/ci location -i nep-compress)"
+          log="${RUNNER_TEMP}/spack-build-out.txt"
+          gzip -dc "${prefix}/.spack/spack-build-out.txt.gz" > "${log}"
+          test -f "${prefix}/lib/plugin/libh5lz4.so"
+          grep -q 'tst_lz4_filters' "${log}"
+          grep -q 'ftst_nep_bzip2' "${log}"
+          grep -q 'skipping perf_compare_filters' "${log}"
+          spack -e spack/ci test run nep-compress
+
+      - name: Upload Spack logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spack-logs
+          path: |
+            /opt/spack/**/.spack/spack-build-*.txt*
+            /tmp/runner/spack-stage/**/spack-build-*.txt*

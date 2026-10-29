@@ -1,14 +1,44 @@
 # Roadmap
 
-## V1.2.0 Compression Filter for Mereosat
+## V1.2.0 Compression Filter for Meteosat
 
-From "Earth Observation in Practice":
+### Sprint 1: Add JPEG-LS Filter Support
+- EUMETSAT JPEG-LS (HDF5 ID 32018, FCIDECOMP) through an external plugin (fcidecomp or hdf5plugin `libh5fcidecomp.so`), like BZIP2: `NEPCOMPRESS_BUILD_JPEGLS` (default OFF) and `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` with a configure probe.
+- C `nc_def_var_jpegls(ncid, varid, near)` / `nc_inq_var_jpegls(ncid, varid, &has, &near)` plus Fortran `nf90_*_jpegls`. `near` 0 is lossless; `near` > 0 is near-lossless (lossy).
+- The define call returns `NC_ENOFILTER` first, `NC_EBADTYPE` for anything other than byte/ubyte/short/ushort, and `NC_EINVAL` for a bad rank, `near` or chunk shape, so data is never silently stored raw. The inquiry handles the 13-parameter form in FCI files.
+- Synthetic-data tests only (`tst_jpegls`, `jpegls_missing_plugin`, `ftst_nep_jpegls`). CI uses the hdf5plugin directory.
+- The "Earth Observation in Practice" quote is kept word for word in `docs/compression.md` and `docs/release-notes-v1.2.0.md`. A JPEG-LS row is added to the mainpage table. Version 1.2.0, SOVERSION 1.
+- Out of scope: building our own CharLS plugin, committed or downloaded FCI data, JPEG-LS in `perf_compare_filters`, other JPEG-LS parameters.
 
-EUMETSAT disseminates FCI Level-1c imagery with stronger lossless compression based on the JPEG-LS standard through the CharLS library. JPEG-LS is implemented as a custom HDF5 filter (`H5ZJPEGLS`), not built into standard NetCDF-4 or HDF5 installations. The filename's `special_compression` field identifies these datasets; the product user guide documents which streams and dissemination paths use JPEG-LS.
+Plan: [docs/plans/v1.2.0-sprint1-add-jpeg-ls-filter-support.md](plans/v1.2.0-sprint1-add-jpeg-ls-filter-support.md)
 
-To read JPEG-LS-compressed FCI NetCDF-4 files you must install the `fcidecomp` decompression software from EUMETSAT. `fcidecomp` supplies the `H5ZJPEGLS` HDF5 filter plugin, which the HDF5 library loads automatically when the file is opened. Once the plugin is installed, reads are transparent: `netCDF4.Dataset()` or `h5py.File()` behave as if the data were uncompressed. Without the plugin, accessing a compressed variable fails because the library does not recognise the filter.
+### Sprint 2: Spack Support
+- `nep-compress` Spack recipe in an overlay repo, `spack/repos/spack_repo/nepcompress`: versions `main` and `1.1.0`; variants `lz4`, `bzip2` (uses NetCDF-C's plugin directory) and `fortran`, all on by default; no MPI constraint. `spack load` adds the LZ4 plugin directory to `HDF5_PLUGIN_PATH`.
+- Minimum NetCDF-C lowered to 4.10.0, which is what upstream Spack has. `perf_compare_filters` is skipped on NetCDF-C older than 4.10.1.
+- The consumer test project no longer requires Fortran, and is used as a Spack stand-alone test.
+- New `spack.yml` CI job: builds the checkout with `spack develop` on `netcdf-c+mpi ^mpich`, runs ctest through `--test=root`, then `spack test run`.
+- Submit an identical copy to https://github.com/spack/spack-packages as "nep-compress: new package". `docs/spack-plan.md` documents the submission, review, release-bump and netcdf-c 4.10.1 follow-up steps.
+- Out of scope: a `jpegls` variant, the `1.2.0` version line (added after the tag), `1.0.0`, a `~mpi` CI job.
 
-- We need to accomodate this filter in nep-compress.
+Plan: [docs/plans/v1.2.0-sprint2-spack-support.md](plans/v1.2.0-sprint2-spack-support.md)
+
+### Sprint 3: Conda Support
+- rattler-build recipe in `conda/recipe/` (it builds the checkout). `conda/make_staged_recipe.py` generates the staged-recipes copy for the 1.1.0 tarball. linux-64 only, nompi, one `nep-compress` package with C and Fortran, LZ4 and BZIP2.
+- The LZ4 plugin is installed as `$PREFIX/lib/hdf5/plugin/libh5lz4_nepcompress.so` (conda HDF5's default plugin directory, so no `HDF5_PLUGIN_PATH` is needed). `run_constraints` forbids `hdf5-external-filter-plugins-lz4`. No CMake changes.
+- New `conda.yml` CI job: rattler-build with conda-forge pinnings, ctest inside the build, package tests (including the consumer), and conda-smithy lint of the staged copy.
+- Submit "Add nep-compress" to conda-forge/staged-recipes with maintainers `edhartnett` and `captainkirk99`. `docs/conda-plan.md` documents submission, the feedstock, releases and adding macOS.
+- Out of scope: macOS/Windows, MPI variants, JPEG-LS, split outputs, the 1.2.0 conda release (done by the bot after the tag).
+
+Plan: [docs/plans/v1.2.0-sprint3-conda-support.md](plans/v1.2.0-sprint3-conda-support.md)
+
+### Sprint 4: Extended Abstract describing nep-compress
+- New `docs/nep-compress-abstract.md`, modeled on NEP's `docs/NEP_abstract.md` and limited to compression: Abstract, Introduction, Compression (built-in filters, LZ4, BZIP2, JPEG-LS), Performance, Building and Installing, Summary, References. Describes v1.2.0 as the current release.
+- Both simple charts (`compare_filters_{write,read}_simple.png`), each with a detailed description, a four-field shuffle-on table copied from `performance/reference_results.csv`, and conclusions consistent with the mainpage's "Which compression should I use?".
+- Repo-only Markdown (not in Doxygen), shipped in the `v1.2.0` tag and linked from the README, the mainpage and the v1.2.0 release notes. The Handbook link is `dp/B0H7Q49MPS`.
+- Out of scope: a PDF or release asset, publishing on gh-pages, the complex charts, new measurements, JPEG-LS benchmarks, rewording the mainpage.
+
+Plan: [docs/plans/v1.2.0-sprint4-extended-abstract.md](plans/v1.2.0-sprint4-extended-abstract.md)
+
 
 ## V1.1.0 - Documentation
 

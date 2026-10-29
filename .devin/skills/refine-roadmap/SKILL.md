@@ -36,6 +36,13 @@ decisions and not facts you could have looked up.
   API claim against it and the installed `netcdf_filter.h`.
 - Check the tools and versions the work needs (compilers, doxygen, CMake,
   libraries) and whether `ubuntu-latest` CI provides them.
+- Read the Spack recipe
+  `spack/repos/spack_repo/nepcompress/packages/nep_compress/package.py`
+  (if it exists) and `docs/spack-plan.md`. Note which of the sprint's
+  changes the recipe would have to follow: new or renamed CMake options
+  or cache paths, new or changed dependencies and minimum versions, new
+  plugins or installed files, install-layout changes, and test
+  requirements such as plugin directories.
 
 Mark anything you could not verify as an open question, not a fact.
 
@@ -81,6 +88,18 @@ Project conventions the plan must follow:
 - Every change keeps `ctest` passing and the docs build warning-free.
 - If the sprint changes a name, signature, or behavior that is already
   documented, the plan includes updating those docs.
+- If the sprint changes anything the Spack recipe depends on (CMake
+  options, dependencies, minimum versions, installed files, plugin
+  directories), the plan includes a work item that updates the overlay
+  recipe. That item says whether the change needs a new variant, a
+  `depends_on` change, or a version-gated `when=` condition, so older
+  release versions in the recipe still build. Its Verification runs
+  `spack style`, `spack audit packages nep-compress` and `spack spec`,
+  and expects the `spack` CI job to pass. If the change also has to
+  reach `spack/spack-packages`, the plan says it ships in the next
+  version-bump PR, following `docs/spack-plan.md`. If the sprint
+  changes nothing the recipe depends on, the plan's Current state says
+  so in one line.
 
 ## 4. Update the roadmap
 

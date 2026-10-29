@@ -14,21 +14,25 @@ jobs:
           - name: lz4-c
             lz4: "ON"
             bzip2: "OFF"
+            jpegls: "OFF"
             fortran: "OFF"
             asan: "OFF"
           - name: bzip2-fortran
             lz4: "OFF"
             bzip2: "ON"
+            jpegls: "ON"
             fortran: "ON"
             asan: "OFF"
           - name: both-fortran
             lz4: "ON"
             bzip2: "ON"
+            jpegls: "ON"
             fortran: "ON"
             asan: "OFF"
           - name: lz4-c-asan
             lz4: "ON"
             bzip2: "OFF"
+            jpegls: "ON"
             fortran: "OFF"
             asan: "ON"
     name: ${{ matrix.name }}
@@ -59,6 +63,8 @@ jobs:
           echo "External plugin directory: ${BZIP2_PLUGIN_DIR}"
           echo "BZIP2_PLUGIN_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
           echo "ZSTD_PLUGIN_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
+          echo "JPEGLS_PLUGIN_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
+          ls "${BZIP2_PLUGIN_DIR}"
 
       - name: Configure
         run: |
@@ -75,8 +81,10 @@ jobs:
             -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" -DHDF5_ROOT="${CONDA_PREFIX}" \
             -DNEPCOMPRESS_BUILD_LZ4=${{ matrix.lz4 }} \
             -DNEPCOMPRESS_BUILD_BZIP2=${{ matrix.bzip2 }} \
+            -DNEPCOMPRESS_BUILD_JPEGLS=${{ matrix.jpegls }} \
             -DNEPCOMPRESS_ENABLE_FORTRAN=${{ matrix.fortran }} \
             -DNEPCOMPRESS_BZIP2_PLUGIN_DIR="${BZIP2_PLUGIN_DIR}" \
+            -DNEPCOMPRESS_JPEGLS_PLUGIN_DIR="${JPEGLS_PLUGIN_DIR}" \
             -DNEPCOMPRESS_ZSTD_PLUGIN_DIR="${ZSTD_PLUGIN_DIR}" \
             "${ASAN_FLAGS[@]}" \
             -DBUILD_TESTING=ON
@@ -91,6 +99,12 @@ jobs:
           if [[ "${{ matrix.lz4 }}" == "ON" ]]; then
             grep -q 'tst_h_lz4' build/test-list.txt
             grep -q 'tst_lz4_filters' build/test-list.txt
+          fi
+          if [[ "${{ matrix.jpegls }}" == "ON" ]]; then
+            grep -q 'tst_jpegls' build/test-list.txt
+            grep -q 'jpegls_missing_plugin' build/test-list.txt
+          else
+            if grep -q 'tst_jpegls' build/test-list.txt; then exit 1; fi
           fi
           grep -q 'perf_compare_filters' build/test-list.txt
 

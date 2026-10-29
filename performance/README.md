@@ -15,8 +15,10 @@ times and the minimum is reported. Every round trip is checked
 bit-exactly and the variable's filter IDs are verified after reopening.
 
 The test needs a zstd (filter 32015) HDF5 plugin to read its input
-sample, so it is only configured when `NEPCOMPRESS_ZSTD_PLUGIN_DIR`
-names a directory containing exactly one 32015 provider:
+sample, and NetCDF-C 4.10.1 or later (4.10.1 fixed an input-length bug
+in NetCDF-C's zstd plugin), so it is only configured when
+`NEPCOMPRESS_ZSTD_PLUGIN_DIR` names a directory containing exactly one
+32015 provider; on older NetCDF-C it is skipped with a status message:
 
 ```sh
 cmake -DNEPCOMPRESS_ZSTD_PLUGIN_DIR=$HOME/plugins/zstd-only ...

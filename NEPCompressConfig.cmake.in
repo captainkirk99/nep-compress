@@ -1,7 +1,7 @@
 @PACKAGE_INIT@
 include(CMakeFindDependencyMacro)
 find_dependency(PkgConfig)
-pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.1)
+pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.0)
 if(@NEPCOMPRESS_ENABLE_FORTRAN@)
     pkg_check_modules(NETCDF_FORTRAN REQUIRED IMPORTED_TARGET netcdf-fortran)
 endif()

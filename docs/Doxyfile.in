@@ -1,6 +1,6 @@
 PROJECT_NAME           = "nep-compress"
 PROJECT_NUMBER         = @NEPC_VERSION@
-PROJECT_BRIEF          = "LZ4 and BZIP2 compression filters for NetCDF-4/HDF5"
+PROJECT_BRIEF          = "LZ4, BZIP2 and JPEG-LS compression filters for NetCDF-4/HDF5"
 OUTPUT_DIRECTORY       = @NEPC_OUTPUT_DIR@
 INPUT                  = @NEPC_SOURCE_DIR@/docs/mainpage.md \
                          @NEPC_SOURCE_DIR@/docs/compression.md \
@@ -17,7 +17,7 @@ RECURSIVE              = YES
 EXCLUDE_PATTERNS       = */build/* */README.md
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
-PREDEFINED             = NEPCOMPRESS_BUILD_LZ4 NEPCOMPRESS_BUILD_BZIP2
+PREDEFINED             = NEPCOMPRESS_BUILD_LZ4 NEPCOMPRESS_BUILD_BZIP2 NEPCOMPRESS_BUILD_JPEGLS
 IMAGE_PATH             = @NEPC_SOURCE_DIR@/docs \
                          @NEPC_SOURCE_DIR@/docs/images
 HTML_EXTRA_FILES       = @NEPC_SOURCE_DIR@/docs/NDH_cover.jpg \

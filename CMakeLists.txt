@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.18)
-project(nepcompress VERSION 1.1.0 LANGUAGES C)
+project(nepcompress VERSION 1.2.0 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CTest)
 
 option(NEPCOMPRESS_BUILD_LZ4 "Build the LZ4 API and HDF5 plugin" ON)
 option(NEPCOMPRESS_BUILD_BZIP2 "Build the Fortran BZIP2 API and tests (uses NetCDF-C's nc_def_var_bzip2; requires an external HDF5 plugin)" OFF)
+option(NEPCOMPRESS_BUILD_JPEGLS "Build the JPEG-LS (ID 32018) API and tests (requires an external EUMETSAT fcidecomp HDF5 plugin)" OFF)
 option(NEPCOMPRESS_ENABLE_FORTRAN "Build Fortran compression wrappers" ON)
 option(NEPCOMPRESS_BUILD_BENCHMARKS "Build slow LZ4/BZIP2 performance examples" OFF)
 option(NEPCOMPRESS_BUILD_DOCS "Build Doxygen HTML documentation" OFF)
@@ -13,14 +14,15 @@ set(NEPCOMPRESS_DOCS_WARN_AS_ERROR "NO" CACHE STRING
     "Doxygen WARN_AS_ERROR value (e.g. FAIL_ON_WARNINGS)")
 set(NEPCOMPRESS_BZIP2_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 307")
 set(NEPCOMPRESS_ZSTD_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 32015 (zstd); enables the performance test")
+set(NEPCOMPRESS_JPEGLS_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 32018 (JPEG-LS, fcidecomp)")
 set(NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR "" CACHE PATH "Optional previous LZ4 plugin directory for cross-plugin file tests")
 
-if(NOT NEPCOMPRESS_BUILD_LZ4 AND NOT NEPCOMPRESS_BUILD_BZIP2)
+if(NOT NEPCOMPRESS_BUILD_LZ4 AND NOT NEPCOMPRESS_BUILD_BZIP2 AND NOT NEPCOMPRESS_BUILD_JPEGLS)
     message(FATAL_ERROR "Enable at least one compression filter")
 endif()
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.1)
+pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf>=4.10.0)
 # HDF5 2.x package configs reject a 1.14 minimum-version request even though
 # the installed library is newer. The module finder checks the actual version
 # and honors HDF5_ROOT instead of a stale cached HDF5_DIR.
@@ -67,6 +69,21 @@ if(NEPCOMPRESS_BUILD_BZIP2)
     nepc_require_filter_plugin(307 "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}" NEPCOMPRESS_BZIP2_PLUGIN_OK)
 endif()
 
+if(NEPCOMPRESS_BUILD_JPEGLS)
+    if(NOT IS_DIRECTORY "${NEPCOMPRESS_JPEGLS_PLUGIN_DIR}")
+        message(FATAL_ERROR "Set NEPCOMPRESS_JPEGLS_PLUGIN_DIR to a directory with an HDF5 filter 32018 (JPEG-LS) plugin")
+    endif()
+    nepc_require_filter_plugin(32018 "${NEPCOMPRESS_JPEGLS_PLUGIN_DIR}" NEPCOMPRESS_JPEGLS_PLUGIN_OK)
+endif()
+
+# NetCDF-C fixed an input-length bug in its zstd plugin in 4.10.1;
+# perf_compare_filters reads a zstd-compressed sample, so it needs
+# 4.10.1 or later.
+if(NEPCOMPRESS_ZSTD_PLUGIN_DIR AND NETCDF_VERSION VERSION_LESS 4.10.1)
+    message(STATUS "NetCDF-C ${NETCDF_VERSION} is older than 4.10.1; ignoring NEPCOMPRESS_ZSTD_PLUGIN_DIR and skipping perf_compare_filters")
+    set(NEPCOMPRESS_ZSTD_PLUGIN_DIR "")
+endif()
+
 if(NEPCOMPRESS_ZSTD_PLUGIN_DIR)
     if(NOT IS_DIRECTORY "${NEPCOMPRESS_ZSTD_PLUGIN_DIR}")
         message(FATAL_ERROR "Set NEPCOMPRESS_ZSTD_PLUGIN_DIR to a directory with an HDF5 filter 32015 plugin")
@@ -77,7 +94,8 @@ endif()
 add_library(nepcompress SHARED src/nep_compress.c)
 add_library(NEPCompress::nepcompress ALIAS nepcompress)
 target_compile_definitions(nepcompress PRIVATE
-    $<$<BOOL:${NEPCOMPRESS_BUILD_LZ4}>:NEPCOMPRESS_BUILD_LZ4>)
+    $<$<BOOL:${NEPCOMPRESS_BUILD_LZ4}>:NEPCOMPRESS_BUILD_LZ4>
+    $<$<BOOL:${NEPCOMPRESS_BUILD_JPEGLS}>:NEPCOMPRESS_BUILD_JPEGLS>)
 target_include_directories(nepcompress PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
@@ -106,7 +124,8 @@ if(NEPCOMPRESS_ENABLE_FORTRAN)
         Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules")
     target_compile_definitions(nepcompressf PRIVATE
         $<$<BOOL:${NEPCOMPRESS_BUILD_LZ4}>:NEPCOMPRESS_BUILD_LZ4>
-        $<$<BOOL:${NEPCOMPRESS_BUILD_BZIP2}>:NEPCOMPRESS_BUILD_BZIP2>)
+        $<$<BOOL:${NEPCOMPRESS_BUILD_BZIP2}>:NEPCOMPRESS_BUILD_BZIP2>
+        $<$<BOOL:${NEPCOMPRESS_BUILD_JPEGLS}>:NEPCOMPRESS_BUILD_JPEGLS>)
     target_include_directories(nepcompressf PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/modules>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nep-compress>)

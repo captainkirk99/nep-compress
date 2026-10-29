@@ -64,6 +64,7 @@ Key files:
 | blosc | 32001 | Needs plugin. 7 params |
 | LZ4 (nep-compress) | 32004 | Needs plugin. Not known to NetCDF-C |
 | zstandard | 32015 | Needs plugin. 1 param, level -131072..22 |
+| JPEG-LS (EUMETSAT FCIDECOMP) | 32018 | Needs plugin (fcidecomp / hdf5plugin libh5fcidecomp). 9 user params, 13 stored; near at index 3 / 7 |
 
 IDs are assigned by The HDF Group; IDs above 32767 may be used for testing
 without registration.
@@ -168,6 +169,10 @@ buffers to get counts, allocate, call again. Any output pointer may be NULL.
   `ncdump -hs file.nc`.
 - Filters (and quantize) must be set after `nc_def_var` and before
   `nc_enddef` or the first data write.
+- Filter 32018 (JPEG-LS/fcidecomp) on an unsupported type or chunk
+  shape stores data raw with no NetCDF error — only stderr messages
+  from the plugin. Validate type (1- or 2-byte integer), rank (2 or 3)
+  and chunk shape before defining it.
 
 ### Quantization (lossy, applied before filters on write)
 
@@ -345,6 +350,13 @@ static size_t filter_func(unsigned flags, size_t cd_nelmts, const unsigned cd_va
   outside 1-9. `nc_inq_var_lz4` uses `nc_inq_var_filter_info(LZ4_ID)`
   count-first, finds LZ4 anywhere in the pipeline, and does not need the
   plugin.
+- `nc_def_var_jpegls` checks `nc_inq_filter_avail` first
+  (`NC_ENOFILTER`), then type (`NC_EBADTYPE` unless NC_BYTE/NC_UBYTE/
+  NC_SHORT/NC_USHORT), rank (2 or 3), `near` (0-127 / 0-255) and chunk
+  shape (`NC_EINVAL`). `nc_inq_var_jpegls` uses
+  `nc_inq_var_filter_info(JPEGLS_ID)` count-first, does not need the
+  plugin, and accepts only 0, 9 or 13 parameters — anything else is
+  `NC_EFILTER`.
 - Tests set `HDF5_PLUGIN_PATH` to one plugin directory per filter: the
   build-tree LZ4 directory for LZ4 tests, the external directory for
   BZIP2 tests (CTest does this per test). See `README.md` and
@@ -360,3 +372,13 @@ static size_t filter_func(unsigned flags, size_t cd_nelmts, const unsigned cd_va
 - When comparing filters (zlib, szip, zstd, bzip2, blosc, LZ4), check
   availability with `nc_inq_filter_avail` first and skip unavailable ones
   rather than relying on wrappers that may silently no-op.
+- The minimum NetCDF-C is 4.10.0, and CMake ignores
+  `NEPCOMPRESS_ZSTD_PLUGIN_DIR` below 4.10.1.
+- In Spack, NetCDF-C's `prefix.plugins` holds exactly one 307 and one
+  32015 provider, and the `nep-compress` recipe uses it for both.
+- conda-forge HDF5's default plugin directory is
+  `$PREFIX/lib/hdf5/plugin`, where libnetcdf installs its plugins.
+- nep-compress's conda package installs `libh5lz4_nepcompress.so`
+  there.
+- `hdf5-external-filter-plugins-lz4` is a second 32004 provider, and
+  the recipe forbids it.
