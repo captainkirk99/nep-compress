@@ -63,6 +63,9 @@ dkms.conf
 spack/ci/spack.lock
 spack-build-*
 spack-configure-args.txt
+
+# rattler-build default output directory (local builds without --output-dir)
+output/
 build-linux-*
 spack/ci-local/
 .ci-spack/

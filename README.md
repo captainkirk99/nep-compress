@@ -159,6 +159,35 @@ upstream PR link will appear here once it is open.
 
 Maintainers: see [docs/spack-plan.md](docs/spack-plan.md).
 
+## Install with conda
+
+Once the feedstock exists on conda-forge:
+
+```sh
+conda install -c conda-forge nep-compress
+```
+
+Until then, build the recipe locally from a clone of this repository:
+
+```sh
+curl -sSfL -o conda_build_config.yaml \
+  https://raw.githubusercontent.com/conda-forge/conda-forge-pinning-feedstock/main/recipe/conda_build_config.yaml
+rattler-build build --recipe conda/recipe/recipe.yaml -m conda_build_config.yaml
+```
+
+The package is linux-64 only for now and includes the C and Fortran
+libraries, LZ4 and BZIP2. The LZ4 plugin is installed as
+`$CONDA_PREFIX/lib/hdf5/plugin/libh5lz4_nepcompress.so`, conda HDF5's
+default plugin directory, so no `HDF5_PLUGIN_PATH` is needed. Setting
+`HDF5_PLUGIN_PATH` replaces that default, so include
+`$CONDA_PREFIX/lib/hdf5/plugin` if you set it. BZIP2 uses libnetcdf's
+plugin in the same directory. The package cannot be installed together
+with `hdf5-external-filter-plugins-lz4`, which provides the same
+filter ID. JPEG-LS is not built; use a source build with hdf5plugin's
+plugin directory for that.
+
+Maintainers: see [docs/conda-plan.md](docs/conda-plan.md).
+
 ## Using the libraries
 
 ```c

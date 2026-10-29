@@ -23,13 +23,17 @@ Plan: [docs/plans/v1.2.0-sprint1-add-jpeg-ls-filter-support.md](plans/v1.2.0-spr
 Plan: [docs/plans/v1.2.0-sprint2-spack-support.md](plans/v1.2.0-sprint2-spack-support.md)
 
 ### Sprint 3: Conda Support
-- Add conda support.
-- Test with CI.
-- Add to condaforge.
+- rattler-build recipe in `conda/recipe/` (it builds the checkout). `conda/make_staged_recipe.py` generates the staged-recipes copy for the 1.1.0 tarball. linux-64 only, nompi, one `nep-compress` package with C and Fortran, LZ4 and BZIP2.
+- The LZ4 plugin is installed as `$PREFIX/lib/hdf5/plugin/libh5lz4_nepcompress.so` (conda HDF5's default plugin directory, so no `HDF5_PLUGIN_PATH` is needed). `run_constraints` forbids `hdf5-external-filter-plugins-lz4`. No CMake changes.
+- New `conda.yml` CI job: rattler-build with conda-forge pinnings, ctest inside the build, package tests (including the consumer), and conda-smithy lint of the staged copy.
+- Submit "Add nep-compress" to conda-forge/staged-recipes with maintainers `edhartnett` and `captainkirk99`. `docs/conda-plan.md` documents submission, the feedstock, releases and adding macOS.
+- Out of scope: macOS/Windows, MPI variants, JPEG-LS, split outputs, the 1.2.0 conda release (done by the bot after the tag).
+
+Plan: [docs/plans/v1.2.0-sprint3-conda-support.md](plans/v1.2.0-sprint3-conda-support.md)
 
 ### Sprint 4: Extended Abstract describing nep-compress
 - In docs/nep-compress-abstract.md
-- Describe v1.2.0 as the current release. The abstract document will be released with the v1.2.0 release.
+- Describe v1.2.0 as the current release. The abstract1a 2a 3a 4a 5c document will be released with the v1.2.0 release.
 - Use this for an example: https://github.com/Intelligent-Data-Design-Inc/NEP/blob/main/docs/NEP_abstract.md
 - Include the simple charts from docs/images along with detailed description of them with conclusions about the best compression to use.
 

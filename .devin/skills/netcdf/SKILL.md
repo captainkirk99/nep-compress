@@ -376,3 +376,9 @@ static size_t filter_func(unsigned flags, size_t cd_nelmts, const unsigned cd_va
   `NEPCOMPRESS_ZSTD_PLUGIN_DIR` below 4.10.1.
 - In Spack, NetCDF-C's `prefix.plugins` holds exactly one 307 and one
   32015 provider, and the `nep-compress` recipe uses it for both.
+- conda-forge HDF5's default plugin directory is
+  `$PREFIX/lib/hdf5/plugin`, where libnetcdf installs its plugins.
+- nep-compress's conda package installs `libh5lz4_nepcompress.so`
+  there.
+- `hdf5-external-filter-plugins-lz4` is a second 32004 provider, and
+  the recipe forbids it.

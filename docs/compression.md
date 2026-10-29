@@ -166,6 +166,9 @@ fcidecomp's own.
 - The minimum NetCDF-C is now 4.10.0. `perf_compare_filters` is
   skipped on NetCDF-C older than 4.10.1.
 - A Spack package `nep-compress` (see the README).
+- A conda-forge recipe `nep-compress` (see the README); its LZ4 plugin
+  is installed in conda HDF5's default plugin directory as
+  `lib/hdf5/plugin/libh5lz4_nepcompress.so`.
 
 ## Changes in 1.1.0
 
