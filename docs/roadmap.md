@@ -49,9 +49,13 @@ Plan: [docs/plans/v1.2.0-sprint4-extended-abstract.md](plans/v1.2.0-sprint4-exte
 Plan: [docs/plans/v1.2.0-sprint5-clarify-lz4-plugin.md](plans/v1.2.0-sprint5-clarify-lz4-plugin.md)
 
 ### Sprint 6: Spack and Conda Follow-up for the Vendored LZ4 Plugin
-- Moved from Sprint 5: review the Spack and conda recipes against the vendored upstream LZ4 plugin (`lz4hc.h`, the installed `share/doc/nepcompress/COPYING.hdf5_plugins`).
-- Conda: add `plugins/COPYING.hdf5_plugins` to `license_file` without breaking `make_staged_recipe.py` for the 1.1.0 tarball; decide whether to keep the `run_constraints` on `hdf5-external-filter-plugins-lz4`.
-- Spack: run `spack style`, `spack audit packages nep-compress` and `spack spec`; update `docs/spack-plan.md` and `docs/conda-plan.md`.
+- Done after the `v1.2.0` tag. Spack and conda-forge start at 1.2.0; 1.0.0 and 1.1.0 are not packaged.
+- Spack: the recipe lists `main` and `1.2.0` only, with `netcdf-c@4.10.0:` unconditional. PR spack/spack-packages#7334 gets a new commit (no force-push) and a new body.
+- Conda: the `run_constraints` on `hdf5-external-filter-plugins-lz4` is dropped (same encoding, different file names). The checkout recipe becomes `1.3.0.dev0`, and `make_staged_recipe.py` replaces any version line. `conda.yml` lints the 1.2.0 staged copy, and PR conda-forge/staged-recipes#35426 is updated to 1.2.0.
+- Docs: `docs/spack-plan.md`, `docs/conda-plan.md` and the README install sections; the refine-roadmap skill uses ruff + vermin instead of `spack style`.
+- Out of scope: license changes, a `jpegls` variant, macOS/MPI conda builds, the feedstock, the netcdf-c 4.10.1 `spack.yml` follow-up, bumping CMake to 1.3.0.
+
+Plan: [docs/plans/v1.2.0-sprint6-spack-and-conda-follow-up.md](plans/v1.2.0-sprint6-spack-and-conda-follow-up.md)
 
 
 ## V1.1.0 - Documentation

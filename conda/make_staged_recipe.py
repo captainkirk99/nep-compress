@@ -4,7 +4,7 @@ Usage: python3 conda/make_staged_recipe.py VERSION SHA256 OUTDIR
 
 Writes OUTDIR/recipes/nep-compress/recipe.yaml and build.sh, with the
 checkout source replaced by the release tarball and the development
-version replaced by VERSION, so the two recipes cannot drift.
+version line replaced by VERSION, so the two recipes cannot drift.
 
 Author: Edward Hartnett, Intelligent Data Design, Inc.
 """
@@ -16,7 +16,7 @@ from pathlib import Path
 
 RECIPE_DIR = Path(__file__).resolve().parent / "recipe"
 
-VERSION_LINE = '  version: "1.2.0.dev0"'
+VERSION_RE = re.compile(r'^  version: "[^"]*"\n$')
 BEGIN = "# BEGIN source"
 END = "# END source"
 
@@ -36,8 +36,8 @@ def main() -> int:
     text = (RECIPE_DIR / "recipe.yaml").read_text()
     lines = text.splitlines(keepends=True)
 
-    if lines.count(VERSION_LINE + "\n") != 1:
-        print(f"error: expected exactly one line {VERSION_LINE!r} in recipe.yaml", file=sys.stderr)
+    if sum(1 for line in lines if VERSION_RE.match(line)) != 1:
+        print("error: expected exactly one quoted version line in recipe.yaml", file=sys.stderr)
         return 1
     if lines.count(BEGIN + "\n") != 1 or lines.count(END + "\n") != 1:
         print(f"error: expected exactly one {BEGIN!r} and one {END!r} marker in recipe.yaml",
@@ -58,7 +58,7 @@ def main() -> int:
                 skipping = False
                 out.append(f"source:\n  url: {SOURCE_URL}\n  sha256: {sha256}\n")
             continue
-        if line == VERSION_LINE + "\n":
+        if VERSION_RE.match(line):
             line = f'  version: "{version}"\n'
         out.append(line)
 

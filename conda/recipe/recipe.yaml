@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: nep-compress
-  version: "1.2.0.dev0"
+  version: "1.3.0.dev0"
 
 package:
   name: ${{ name }}
@@ -34,8 +34,6 @@ requirements:
     - hdf5
     - hdf5 * nompi_*
     - lz4-c
-  run_constraints:
-    - hdf5-external-filter-plugins-lz4 <0.0.0a0
 
 tests:
   - script:

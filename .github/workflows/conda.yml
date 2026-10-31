@@ -37,8 +37,8 @@ jobs:
         shell: bash -el {0}
         run: |
           set -euo pipefail
-          python3 conda/make_staged_recipe.py 1.1.0 \
-            1f55bf23d6fb6552c14d868416f71c194843f5d7c011d7571fedfd64a2a45e1e \
+          python3 conda/make_staged_recipe.py 1.2.0 \
+            de1d83d9fee6d3dddce1798d9811626b576d75a6d75367dc268e88fbe7631349 \
             "${RUNNER_TEMP}/staged"
           conda-smithy recipe-lint --conda-forge "${RUNNER_TEMP}/staged/recipes/nep-compress"
 
