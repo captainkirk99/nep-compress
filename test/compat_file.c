@@ -12,10 +12,17 @@
 
 #include <netcdf.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* Number of elements in the test variable. */
 #define COUNT 64
+
+/* Number of elements in the large test variable. */
+#define LARGE_COUNT 1048576
+
+/* Chunk size of the large test variable. */
+#define LARGE_CHUNK 65536
 
 /*
  * Print a NetCDF error message for a failed operation.
@@ -37,7 +44,7 @@ fail(int status, const char *operation)
  * Run the compatibility helper.
  *
  * argc - Argument count.
- * argv - Arguments: write|read|missing, path, lz4|bzip2.
+ * argv - Arguments: write|read|missing|large, path, lz4|bzip2.
  * Returns 0 on success, 1 on data or metadata mismatch, 2 on usage
  * error.
  *
@@ -47,7 +54,8 @@ int
 main(int argc, char **argv)
 {
     int ncid, varid, dimid, storage, values[COUNT], actual[COUNT], status, i;
-    unsigned int id, param;
+    unsigned int id;
+    unsigned int params[2];
     size_t nfilters, nparams, chunk;
     const int lz4 = argc == 4 && strcmp(argv[3], "lz4") == 0;
     const int bzip2 = argc == 4 && strcmp(argv[3], "bzip2") == 0;
@@ -56,10 +64,68 @@ main(int argc, char **argv)
 
     if (argc != 4 || (!lz4 && !bzip2) ||
         (strcmp(argv[1], "write") && strcmp(argv[1], "read") &&
-         strcmp(argv[1], "missing")))
+         strcmp(argv[1], "missing") && strcmp(argv[1], "large")) ||
+        (!strcmp(argv[1], "large") && !lz4))
     {
-        fprintf(stderr, "usage: compat_file write|read|missing path lz4|bzip2\n");
+        fprintf(stderr, "usage: compat_file write|read|missing|large path lz4|bzip2\n");
         return 2;
+    }
+
+    if (strcmp(argv[1], "large") == 0)
+    {
+        int *large, *large_in;
+        int ret = 1;
+
+        if (!(large = malloc(LARGE_COUNT * sizeof(int))) ||
+            !(large_in = malloc(LARGE_COUNT * sizeof(int))))
+        {
+            fprintf(stderr, "malloc failed\n");
+            return 1;
+        }
+        for (i = 0; i < LARGE_COUNT; i++)
+            large[i] = i % 1000;
+
+        /* Write a large LZ4 variable, then read it back and compare
+         * bit-exactly. */
+        if ((status = nc_create(argv[2], NC_NETCDF4 | NC_CLOBBER, &ncid)))
+            return fail(status, "create");
+        if ((status = nc_def_dim(ncid, "sample", LARGE_COUNT, &dimid)))
+            return fail(status, "dimension");
+        if ((status = nc_def_var(ncid, "values", NC_INT, 1, &dimid, &varid)))
+            return fail(status, "variable");
+        if ((status = nc_def_var_chunking(ncid, varid, NC_CHUNKED,
+                                          (size_t[]){LARGE_CHUNK})))
+            return fail(status, "chunking");
+#if defined(NEPCOMPRESS_BUILD_LZ4)
+        if ((status = nc_def_var_lz4(ncid, varid, 9)))
+            return fail(status, "filter");
+#else
+        nc_close(ncid);
+        return 2;
+#endif
+        if ((status = nc_put_var_int(ncid, varid, large)))
+            return fail(status, "write");
+        if ((status = nc_close(ncid)))
+            return fail(status, "close");
+        if ((status = nc_open(argv[2], NC_NOWRITE, &ncid)))
+            return fail(status, "open");
+        if ((status = nc_inq_varid(ncid, "values", &varid)))
+            return fail(status, "variable");
+        if ((status = nc_get_var_int(ncid, varid, large_in)))
+            return fail(status, "read");
+        for (i = 0; i < LARGE_COUNT; i++)
+            if (large[i] != large_in[i])
+            {
+                fprintf(stderr, "mismatch at %d\n", i);
+                goto done;
+            }
+        if ((status = nc_close(ncid)))
+            return fail(status, "close");
+        ret = 0;
+    done:
+        free(large);
+        free(large_in);
+        return ret;
     }
 
     for (i = 0; i < COUNT; i++)
@@ -124,16 +190,25 @@ main(int argc, char **argv)
         }
         if ((status = nc_inq_var_filter_info(ncid, varid, id, &nparams, NULL)))
             return fail(status, "filter info");
-        if (nparams != 1)
+        if (nparams != (lz4 ? 2 : 1))
         {
             fprintf(stderr, "unexpected filter parameter count: %zu\n", nparams);
             return 1;
         }
-        if ((status = nc_inq_var_filter_info(ncid, varid, id, &nparams, &param)))
+        if ((status = nc_inq_var_filter_info(ncid, varid, id, &nparams, params)))
             return fail(status, "filter info");
-        if (param != (unsigned int)level)
+        if (lz4)
         {
-            fprintf(stderr, "unexpected filter parameter: %u\n", param);
+            if (params[0] != 0 || params[1] != (unsigned int)(1 - level))
+            {
+                fprintf(stderr, "unexpected filter parameters: %u %u\n",
+                        params[0], params[1]);
+                return 1;
+            }
+        }
+        else if (params[0] != (unsigned int)level)
+        {
+            fprintf(stderr, "unexpected filter parameter: %u\n", params[0]);
             return 1;
         }
         if ((status = nc_get_var_int(ncid, varid, actual)))

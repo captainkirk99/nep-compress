@@ -50,7 +50,7 @@ chunked storage. The filters available to NetCDF-4 users:
 | szip | 4 | HDF5 built with libaec/szip | No (when HDF5 has szip) | `nc_def_var_szip(ncid, varid, options_mask, pixels_per_block)` | `NC_SZIP_NN` or `NC_SZIP_EC`; pixels_per_block even and <= 32 | Good on integer/telemetry-like data; cannot be combined with deflate | Yes |
 | zstandard | 32015 | NetCDF-C plugin `lib__nch5zstd` | Yes | `nc_def_var_zstandard(ncid, varid, level)` | levels -131072 to 22 | Wide range from fast to high ratio | Yes |
 | bzip2 | 307 | External HDF5 plugin (NetCDF-C ships `lib__nch5bzip2`; other providers exist) | Yes | `nc_def_var_bzip2(ncid, varid, level)` (NetCDF-C) | level 1-9 (block size 100-900 KB) | Favors ratio over speed | Yes |
-| LZ4 | 32004 | nep-compress plugin `libh5lz4` | Yes | `nc_def_var_lz4(ncid, varid, level)` | level 1-9 (acceleration parameter) | Favors speed | Yes |
+| LZ4 | 32004 | nep-compress (vendored HDF Group plugin) `libh5lz4` | Yes | `nc_def_var_lz4(ncid, varid, level)` | level 1-9 (fast-mode acceleration; stored as {0, 1-level}) | Favors speed | Yes |
 | JPEG-LS | 32018 | External EUMETSAT fcidecomp plugin (also in hdf5plugin) | Yes | `nc_def_var_jpegls(ncid, varid, near)` | near 0 (lossless) or 1-127 / 1-255; 8/16-bit integer types, rank 2-3 | Strong on integer imagery; used for Meteosat FCI L1c | Yes when near = 0; lossy when near > 0 |
 
 Note that `nc_def_var_zstandard()` does nothing when NetCDF-C was built

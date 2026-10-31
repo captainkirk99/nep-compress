@@ -26,7 +26,7 @@ Plan: [docs/plans/v1.2.0-sprint2-spack-support.md](plans/v1.2.0-sprint2-spack-su
 - rattler-build recipe in `conda/recipe/` (it builds the checkout). `conda/make_staged_recipe.py` generates the staged-recipes copy for the 1.1.0 tarball. linux-64 only, nompi, one `nep-compress` package with C and Fortran, LZ4 and BZIP2.
 - The LZ4 plugin is installed as `$PREFIX/lib/hdf5/plugin/libh5lz4_nepcompress.so` (conda HDF5's default plugin directory, so no `HDF5_PLUGIN_PATH` is needed). `run_constraints` forbids `hdf5-external-filter-plugins-lz4`. No CMake changes.
 - New `conda.yml` CI job: rattler-build with conda-forge pinnings, ctest inside the build, package tests (including the consumer), and conda-smithy lint of the staged copy.
-- Submit "Add nep-compress" to conda-forge/staged-recipes with maintainers `edhartnett` and `captainkirk99`. `docs/conda-plan.md` documents submission, the feedstock, releases and adding macOS.
+- Submit "Add nep-compress" to conda-forge/staged-recipes with maintainers `captainkirk99` and `czender` (Charlie Zender). `docs/conda-plan.md` documents submission, the feedstock, releases and adding macOS.
 - Out of scope: macOS/Windows, MPI variants, JPEG-LS, split outputs, the 1.2.0 conda release (done by the bot after the tag).
 
 Plan: [docs/plans/v1.2.0-sprint3-conda-support.md](plans/v1.2.0-sprint3-conda-support.md)
@@ -38,6 +38,20 @@ Plan: [docs/plans/v1.2.0-sprint3-conda-support.md](plans/v1.2.0-sprint3-conda-su
 - Out of scope: a PDF or release asset, publishing on gh-pages, the complex charts, new measurements, JPEG-LS benchmarks, rewording the mainpage.
 
 Plan: [docs/plans/v1.2.0-sprint4-extended-abstract.md](plans/v1.2.0-sprint4-extended-abstract.md)
+
+### Sprint 5: Clarify LZ4 Plugin Questions
+- Answers: yes, nep-compress ships its own plugin; it is a fork (`captainkirk99/hdf5_plugins` branch `e1`, `bcb40e0`) that reads `cd_values[0]` as acceleration instead of block size; upstream HDF Group `master` matches the registered 32004 definition and is correct. With a standard provider, `nc_def_var_lz4` files grow to 1.5-5x raw size.
+- Vendor upstream `LZ4/src/H5Zlz4.c` at `4d6b8ce` unchanged (comments only), with `plugins/README.md` and an installed `plugins/COPYING.hdf5_plugins`.
+- `nc_def_var_lz4(level)` keeps its signature and meaning (acceleration 1-9) and stores `{0, 1 - level}`. `nc_inq_var_lz4` accepts the old one-parameter form and the two-parameter form; LZ4HC or acceleration above 9 gives `NC_EFILTER`.
+- Tests: updated parameter checks, a parameter-form table, and `lz4_large_size` / `lz4_reference_large_size` size checks. CI sets `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` to hdf5plugin's directory. Ships in 1.2.0, SOVERSION 1; docs and release notes explain the re-encode hazard for older files.
+- Out of scope: an LZ4HC API, accelerations above 9 or a block-size API, all Spack and conda changes (Sprint 6), the open 1.1.0 Spack and conda PRs, new performance measurements.
+
+Plan: [docs/plans/v1.2.0-sprint5-clarify-lz4-plugin.md](plans/v1.2.0-sprint5-clarify-lz4-plugin.md)
+
+### Sprint 6: Spack and Conda Follow-up for the Vendored LZ4 Plugin
+- Moved from Sprint 5: review the Spack and conda recipes against the vendored upstream LZ4 plugin (`lz4hc.h`, the installed `share/doc/nepcompress/COPYING.hdf5_plugins`).
+- Conda: add `plugins/COPYING.hdf5_plugins` to `license_file` without breaking `make_staged_recipe.py` for the 1.1.0 tarball; decide whether to keep the `run_constraints` on `hdf5-external-filter-plugins-lz4`.
+- Spack: run `spack style`, `spack audit packages nep-compress` and `spack spec`; update `docs/spack-plan.md` and `docs/conda-plan.md`.
 
 
 ## V1.1.0 - Documentation

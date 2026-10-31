@@ -98,9 +98,9 @@ trades maximum compression ratio for very high throughput.
 nep-compress builds the HDF5 plugin `libh5lz4` and exposes the filter
 through `nc_def_var_lz4(ncid, varid, level)` and
 `nc_inq_var_lz4()`, with Fortran equivalents `nf90_def_var_lz4` and
-`nf90_inq_var_lz4`. Levels run from 1 to 9; the parameter is an
-acceleration setting in the copied LZ4 implementation, so level 9 is
-slightly faster than level 1.
+`nf90_inq_var_lz4`. Levels run from 1 to 9; the parameter is the LZ4
+fast-mode acceleration of the HDF Group plugin that nep-compress
+vendors, so level 9 is slightly faster than level 1.
 
 For best results on multi-byte data, enable the shuffle filter first
 with `nc_def_var_deflate(ncid, varid, 1, 0, 0)`, then call

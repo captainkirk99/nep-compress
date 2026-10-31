@@ -64,6 +64,10 @@ spack/ci/spack.lock
 spack-build-*
 spack-configure-args.txt
 
+# Python bytecode (Spack imports package.py and writes __pycache__ next to it)
+__pycache__/
+*.pyc
+
 # rattler-build default output directory (local builds without --output-dir)
 output/
 build-linux-*

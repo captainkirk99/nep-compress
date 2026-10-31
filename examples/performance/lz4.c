@@ -191,14 +191,14 @@ run_one(float *data, int level, int shuffle)
 
     /* Verify lz4 settings took effect before writing. */
     {
-        size_t nparams = 1;
-        unsigned int params[1];
+        size_t nparams = 2;
+        unsigned int params[2];
         if ((ret = nc_inq_var_filter_info(ncid, varid, LZ4_ID, &nparams, params)))
             ERR(ret);
-        if (nparams != 1 || (int)params[0] != level)
+        if (nparams != 2 || params[0] != 0 || params[1] != (unsigned int)(1 - level))
         {
-            fprintf(stderr, "lz4 level mismatch: expected %d, got %u\n",
-                    level, params[0]);
+            fprintf(stderr, "lz4 parameter mismatch: expected {0, %d}, got {%u, %u}\n",
+                    1 - level, params[0], params[1]);
             nc_close(ncid);
             return 1;
         }

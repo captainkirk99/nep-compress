@@ -106,6 +106,16 @@ main()
         /* Set up compression. */
         if (nc_def_var_lz4(ncid, varid, 3)) ERR;
 
+        /* Check the stored parameters: default block size and
+         * encoder selector 1 - 3. */
+        {
+            size_t nparams = 0;
+            unsigned int params[2] = {1, 1};
+
+            if (nc_inq_var_filter_info(ncid, varid, LZ4_ID, &nparams, params)) ERR;
+            if (nparams != 2 || params[0] != 0 || params[1] != 4294967294u) ERR;
+        }
+
         /* The build-tree plugin must be the loaded LZ4 provider. */
         if (nep_check_lz4_provider(NEP_LZ4_PLUGIN_DIR)) ERR;
 
@@ -134,6 +144,15 @@ main()
             /* Check setting. */
             if (nc_inq_var_lz4(ncid, varid, &lz4, &level_in)) ERR;
             if (!lz4 || level_in != 3) ERR;
+
+            /* Check the stored parameters again. */
+            {
+                size_t nparams = 0;
+                unsigned int params[2] = {1, 1};
+
+                if (nc_inq_var_filter_info(ncid, varid, LZ4_ID, &nparams, params)) ERR;
+                if (nparams != 2 || params[0] != 0 || params[1] != 4294967294u) ERR;
+            }
 
             /* Read the data. */
             if (nc_get_var(ncid, varid, data_in)) ERR;

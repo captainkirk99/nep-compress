@@ -108,6 +108,26 @@ if(NEPCOMPRESS_BUILD_LZ4)
             ENVIRONMENT "HDF5_PLUGIN_PATH=${NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR};NETCDF_RC=${CMAKE_CURRENT_BINARY_DIR}/lz4_wrong_provider;NCRCENV_RC=${PROJECT_BINARY_DIR}/no.ncrc"
             PASS_REGULAR_EXPRESSION "unexpected LZ4 provider")
     endif()
+
+    # A file written with the given LZ4 plugin dir must stay small: a
+    # plugin that reads the level as a block size produces output
+    # several times larger than the raw data. 1048576 bytes is a
+    # quarter of raw; the correct pairing gives about 89 KB and the
+    # broken pairing about 6 MB.
+    function(add_lz4_size_test name plugin_dir)
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${name}")
+        add_test(NAME ${name} COMMAND "${CMAKE_COMMAND}"
+            "-DTEST_DIR=${CMAKE_CURRENT_BINARY_DIR}/${name}"
+            "-DEXECUTABLE=$<TARGET_FILE:compat_file>"
+            "-DPLUGIN_DIR=${plugin_dir}"
+            "-DMAX_BYTES=1048576"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/lz4_size.cmake")
+    endfunction()
+    add_lz4_size_test(lz4_large_size "${PROJECT_BINARY_DIR}/plugin")
+    if(IS_DIRECTORY "${NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR}")
+        add_lz4_size_test(lz4_reference_large_size
+            "${NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR}")
+    endif()
 endif()
 if(NEPCOMPRESS_BUILD_BZIP2)
     add_compat_test(bzip2_roundtrip bzip2
