@@ -15,7 +15,7 @@ if you have LZ4 files written by 1.1.0 or earlier.
 
 Finally, v1.2.0 adds a Spack package recipe and a conda-forge recipe,
 each with its own CI job, and an extended abstract,
-[nep-compress-abstract.md](nep-compress-abstract.md), that describes
+[nep-compress-abstract.md](https://github.com/captainkirk99/nep-compress/blob/v1.2.0/docs/nep-compress-abstract.md), that describes
 the package and its measured compression guidance.
 
 ## Upgrading from v1.1.0
@@ -126,7 +126,7 @@ The recipe is under review in
 the `1.2.0` version will be added there. Until it merges, use the
 overlay repository in this repo:
 `spack repo add spack/repos/spack_repo/nepcompress`, then
-`spack install nep-compress`. See [spack-plan.md](spack-plan.md).
+`spack install nep-compress`. See [spack-plan.md](https://github.com/captainkirk99/nep-compress/blob/v1.2.0/docs/spack-plan.md).
 
 ## Conda
 
@@ -142,11 +142,11 @@ generates the copy submitted in
 [conda-forge/staged-recipes#35426](https://github.com/conda-forge/staged-recipes/pull/35426),
 which will be updated to 1.2.0. Until the feedstock exists, build the
 package locally from this repository; see the README "Install with
-conda" section and [conda-plan.md](conda-plan.md).
+conda" section and [conda-plan.md](https://github.com/captainkirk99/nep-compress/blob/v1.2.0/docs/conda-plan.md).
 
 ## Documentation
 
-- An extended abstract, [nep-compress-abstract.md](nep-compress-abstract.md),
+- An extended abstract, [nep-compress-abstract.md](https://github.com/captainkirk99/nep-compress/blob/v1.2.0/docs/nep-compress-abstract.md),
   describes nep-compress 1.2.0: the LZ4, BZIP2 and JPEG-LS filters,
   the compression benchmark and its measured guidance, and how to
   build and install the package.
