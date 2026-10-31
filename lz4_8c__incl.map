@@ -1,0 +1,21 @@
+<map id="examples/performance/lz4.c" name="examples/performance/lz4.c">
+<area shape="rect" id="Node000001" title="Demonstrates how LZ4 compression levels and the shuffle filter affect NetCDF&#45;4 compression ratio and ..." alt="" coords="233,5,407,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,167,80,192"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="233,37,172,46,110,58,59,74,40,84,27,95,21,108,21,123,31,153,26,155,16,124,16,107,23,92,37,80,57,69,109,53,171,40,233,32"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="126,167,237,192"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="289,48,258,69,230,95,209,125,194,155,189,153,204,122,226,92,255,65,285,43"/>
+<area shape="rect" id="Node000004" href="$nep__compress_8h.html" title="LZ4 and JPEG&#45;LS compression filter API for NetCDF&#45;4/HDF5." alt="" coords="37,93,165,119"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="269,48,147,91,146,86,267,43"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="240,93,307,119"/>
+<area shape="poly" id="edge6_Node000001_Node000005" title=" " alt="" coords="311,47,290,83,285,80,306,44"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="331,93,402,119"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="334,44,355,80,350,83,329,47"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="426,93,497,119"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="355,43,429,84,427,89,353,48"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="521,93,607,119"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="379,43,516,86,514,92,378,48"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="631,93,721,119"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="406,43,618,89,617,94,405,48"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="94,121,63,158,59,155,90,117"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="116,117,160,156,156,160,112,121"/>
+</map>
