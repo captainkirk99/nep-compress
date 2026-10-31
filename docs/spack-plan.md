@@ -120,13 +120,13 @@ in. The body states:
 
 - What the package is and its variants (`lz4`, `bzip2`, `fortran`).
 - That `@main` was tested by `spack install --test=root` and `spack
-  test run` in nep-compress CI on `netcdf-c@4.10.0+mpi ^mpich`, with a
-  link to the green `spack` CI run. CI builds the checkout through
-  `spack develop`, so it does not build the `1.1.0` tarball; the
-  `1.1.0` sha256 was checked by hand against the release tarball.
-- That `1.1.0` needs `netcdf-c@4.10.1:` and resolves to
-  `netcdf-c@main` until upstream PR #6569 (netcdf-c 4.10.1) merges,
-  while `main` (and the coming 1.2.0) works with 4.10.0.
+  test run` in nep-compress CI, with a link to the newest green
+  `spack` run on `main`.
+- That the `1.2.0` sha256 was checked by hand against the release
+  tarball and verified with `spack fetch`.
+- That `1.2.0` works with `netcdf-c@4.10.0`, and
+  `perf_compare_filters` is skipped until upstream PR #6569
+  (netcdf-c 4.10.1) merges.
 
 ## 5. Review and merge
 
@@ -160,7 +160,7 @@ queue (`ci.yaml` runs again on `merge_group`) before it merges.
   `-D` is needed because upstream squash-merges, so the branch is not
   an ancestor of `develop`.
 
-## 7. Adding a new release (for example 1.2.0)
+## 7. Adding a new release (for example 1.3.0)
 
 - After the tag is pushed, compute the sha256:
 
@@ -174,9 +174,9 @@ queue (`ci.yaml` runs again on `merge_group`) before it merges.
   `/fast/ed/spack-packages`, created from
   `upstream/develop` (same steps as sections 2-4).
 - Open a PR titled `nep-compress: add vX.Y.Z`.
-- 1.2.0 needs nothing beyond the version line, because
-  `depends_on("netcdf-c@4.10.0:", when="@1.2:")` already covers it and
-  JPEG-LS (`NEPCOMPRESS_BUILD_JPEGLS`) is off by default.
+- A new release needs only the `version(...)` line, unless a
+  dependency or CMake option changed (JPEG-LS,
+  `NEPCOMPRESS_BUILD_JPEGLS`, is off by default).
 
 ## 8. When netcdf-c 4.10.1 reaches spack-packages
 
@@ -201,6 +201,7 @@ queue (`ci.yaml` runs again on `merge_group`) before it merges.
 | Branch pushed to fork | 2026-10-30 | https://github.com/captainkirk99/spack-packages/tree/nep-compress-new-package |
 | Upstream PR opened | 2026-10-30 | https://github.com/spack/spack-packages/pull/7334 |
 | Upstream PR merged | pending | |
-| 1.2.0 added to the recipe | pending | |
+| Recipe switched to 1.2.0 only | 2026-10-31 | overlay recipe: `main` and `1.2.0` |
+| PR #7334 updated to 1.2.0 | 2026-10-31 | `2e114e8976 nep-compress: start at 1.2.0` |
 
 Author: Edward Hartnett, Intelligent Data Design, Inc.

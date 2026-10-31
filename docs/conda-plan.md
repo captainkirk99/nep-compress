@@ -4,6 +4,8 @@ The source of truth for the recipe is `conda/recipe/recipe.yaml` and
 `conda/recipe/build.sh` in this repository; it builds the checkout
 directly. `conda/make_staged_recipe.py` generates the staged-recipes
 copy (release tarball source and version), so the two cannot drift.
+The checkout recipe carries the next development version
+(`1.3.0.dev0`); the script substitutes the release version.
 `.github/workflows/conda.yml` builds and tests the recipe and lints
 the generated staged copy on every push.
 
@@ -42,8 +44,8 @@ A clean result: the build log's ctest summary is 100% passed
 ## 2. Generate the staged recipe
 
 ```sh
-python3 conda/make_staged_recipe.py 1.1.0 \
-  1f55bf23d6fb6552c14d868416f71c194843f5d7c011d7571fedfd64a2a45e1e \
+python3 conda/make_staged_recipe.py 1.2.0 \
+  de1d83d9fee6d3dddce1798d9811626b576d75a6d75367dc268e88fbe7631349 \
   /fast/ed/tmp-conda/staged
 /fast/ed/tmp-conda/env/bin/rattler-build build \
   --recipe /fast/ed/tmp-conda/staged/recipes/nep-compress/recipe.yaml \
@@ -104,8 +106,9 @@ The body:
   maintainer to confirm in the PR).
 - Explains that the LZ4 plugin is installed in HDF5's default plugin
   directory as `lib/hdf5/plugin/libh5lz4_nepcompress.so`, and that the
-  `run_constraints` on `hdf5-external-filter-plugins-lz4` prevents two
-  32004 providers in one environment.
+  package can coexist with `hdf5-external-filter-plugins-lz4`: both
+  provide filter 32004 with the same encoding, and their file names
+  differ, so HDF5 loads whichever it finds first.
 - Links a green `conda` CI run.
 
 ## 5. Review and feedstock creation
@@ -129,8 +132,9 @@ The body:
 
 The conda-forge autotick bot opens the version PR on the feedstock
 after each nep-compress tag. Check that `conda/recipe/build.sh` still
-applies to the new release; for 1.2.0 nothing else changes (the
-minimum `libnetcdf >=4.10.1` is already in the host requirements).
+applies to the new release; for 1.3.0 nothing else changes unless a
+dependency or CMake option changed (the minimum `libnetcdf >=4.10.1`
+is already in the host requirements).
 
 ## 7. Adding macOS
 
@@ -149,6 +153,8 @@ Windows is not planned; nep-compress is Unix-only.
 | Clone of `captainkirk99/staged-recipes` with `upstream` remote | 2026-10-30 | `/fast/ed/staged-recipes` |
 | Branch `nep-compress` committed and pushed to fork | 2026-10-30 | `42eb042105` on `upstream/main` `65da889783` |
 | staged-recipes PR opened | 2026-10-30 | https://github.com/conda-forge/staged-recipes/pull/35426 |
+| Staged 1.2.0 recipe built and linted | 2026-10-31 | ctest 15/15, package tests pass, `recipe-lint`: "in fine form" |
+| PR #35426 updated to 1.2.0 | 2026-10-31 | `d54a9cb0a8 nep-compress: update to 1.2.0` |
 | staged-recipes PR merged | pending | |
 | Feedstock created | pending | |
 | 1.2.0 published on conda-forge | pending | |

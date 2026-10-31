@@ -94,8 +94,10 @@ Project conventions the plan must follow:
   recipe. That item says whether the change needs a new variant, a
   `depends_on` change, or a version-gated `when=` condition, so older
   release versions in the recipe still build. Its Verification runs
-  `spack style`, `spack audit packages nep-compress` and `spack spec`,
-  and expects the `spack` CI job to pass. If the change also has to
+  `spack audit packages nep-compress`, `spack spec`, and upstream's
+  style checks (`ruff format --diff`, `ruff check --no-fix` and
+  `vermin`, as in `docs/spack-plan.md` section 2), and expects the
+  `spack` CI job to pass. If the change also has to
   reach `spack/spack-packages`, the plan says it ships in the next
   version-bump PR, following `docs/spack-plan.md`. If the sprint
   changes nothing the recipe depends on, the plan's Current state says

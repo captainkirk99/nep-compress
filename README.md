@@ -156,8 +156,8 @@ tests) and `fortran` (the Fortran wrappers). `+bzip2` uses NetCDF-C's
 own BZIP2 plugin, so it requires `netcdf-c+shared`. `spack load
 nep-compress` puts nep-compress's LZ4 plugin directory and NetCDF-C's
 plugin directory on `HDF5_PLUGIN_PATH`. JPEG-LS is not available
-through Spack. Submission to spack/spack-packages is in progress; the
-upstream PR link will appear here once it is open.
+through Spack. Submission to spack/spack-packages is in progress:
+https://github.com/spack/spack-packages/pull/7334.
 
 Maintainers: see [docs/spack-plan.md](docs/spack-plan.md).
 
@@ -183,10 +183,12 @@ libraries, LZ4 and BZIP2. The LZ4 plugin is installed as
 default plugin directory, so no `HDF5_PLUGIN_PATH` is needed. Setting
 `HDF5_PLUGIN_PATH` replaces that default, so include
 `$CONDA_PREFIX/lib/hdf5/plugin` if you set it. BZIP2 uses libnetcdf's
-plugin in the same directory. The package cannot be installed together
-with `hdf5-external-filter-plugins-lz4`, which provides the same
-filter ID. JPEG-LS is not built; use a source build with hdf5plugin's
-plugin directory for that.
+plugin in the same directory. The package can be installed alongside
+`hdf5-external-filter-plugins-lz4`; both provide filter 32004 with
+the same encoding, and HDF5 loads whichever it finds first. JPEG-LS
+is not built; use a source build with hdf5plugin's plugin directory
+for that. Submission to conda-forge is in progress:
+https://github.com/conda-forge/staged-recipes/pull/35426.
 
 Maintainers: see [docs/conda-plan.md](docs/conda-plan.md).
 
