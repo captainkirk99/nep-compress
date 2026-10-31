@@ -73,7 +73,10 @@ contains
   !>
   !> @param ncid NetCDF file ID.
   !> @param varid Variable ID (1-based, as in the NetCDF Fortran API).
-  !> @param level LZ4 acceleration level, 1 to 9.
+  !> @param level LZ4 fast-mode acceleration, 1 to 9 (higher is
+  !> faster, lower ratio). Stored as the two standard 32004
+  !> parameters {0, 1 - level}: default block size and encoder
+  !> selector.
   !> @return NetCDF error code: NF90_NOERR on success, NF90_ENOFILTER
   !> if the LZ4 filter plugin is unavailable (checked before the
   !> level), NF90_EINVAL for an invalid level, or another NetCDF
@@ -96,12 +99,15 @@ contains
   !> @param varid Variable ID (1-based).
   !> @param has Required output argument; set to 1 when the variable
   !> uses the LZ4 filter and 0 otherwise.
-  !> @param level Required output argument; set to the LZ4 acceleration
-  !> level stored with the filter. Written only when LZ4 is present
-  !> with exactly one parameter.
+  !> @param level Required output argument; set to the LZ4
+  !> acceleration level decoded from the encoder selector. For a
+  !> one-parameter filter (written by nep-compress 1.1.0 and earlier,
+  !> or by other tools as a block size), the stored value is returned
+  !> unchanged.
   !> @return NetCDF error code: NF90_NOERR on success, NF90_EFILTER
   !> (with @c has set to 1) if the LZ4 filter has a parameter count
-  !> other than 1, or another NetCDF error.
+  !> other than 1 or 2, an LZ4HC encoder selector, or an acceleration
+  !> above 9, or another NetCDF error.
   !>
   !> @author Edward Hartnett, Intelligent Data Design, Inc.
   function nf90_inq_var_lz4(ncid, varid, has, level) result(status)

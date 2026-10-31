@@ -12,18 +12,36 @@ installation, dependencies and a BZIP2 plugin provider.
 - Filter ID: **32004**. `libh5lz4.so` is built and installed by this
   project under `lib/plugin` (or the platform's chosen `CMAKE_INSTALL_LIBDIR`).
 - `nc_def_var_lz4(ncid, varid, level)` enables the filter; valid
-  levels 1-9 are passed as a single filter parameter. The parameter
-  controls acceleration in the copied LZ4 implementation.
+  levels 1-9 are the LZ4 fast-mode acceleration (higher is faster,
+  lower ratio). The plugin is the HDF Group hdf5_plugins LZ4 filter,
+  vendored unchanged (see `plugins/README.md`), and the level is
+  stored as the two standard 32004 parameters `{0, 1 - level}`:
+  default block size and encoder selector.
 - `nc_inq_var_lz4(ncid, varid, &present, &level)` queries settings.
   Either output pointer may be NULL. It searches the whole filter
   pipeline, so LZ4 is found whatever its position among the
   variable's filters. `present` is set to 1 when LZ4 is on the
-  variable; `level` is written only when LZ4 is present with exactly
-  one parameter. It returns `NC_EFILTER` (with `present` set to 1) if
-  the LZ4 filter has a parameter count other than 1. It does not need
+  variable. With one parameter the stored value is returned as the
+  level unchanged (the form written by nep-compress 1.1.0 and
+  earlier). With two parameters the level is decoded from the encoder
+  selector `cd_values[1]`: 0 or 1 gives level 1, and a negative value
+  `e` gives level `1 - e` when that is in 2-9. It returns `NC_EFILTER`
+  (with `present` set to 1) for any other parameter count, an LZ4HC
+  selector (2 or above) or an acceleration above 9. It does not need
   the LZ4 plugin, so metadata stays readable without it.
 - LZ4's [chunk encoding](../plugins/LZ4_HDF5_format.md) differs from
   LZ4 Frame format; preserve the plugin and ID when exchanging files.
+
+### Interoperability
+
+Files written by nep-compress 1.1.0 and earlier store a single
+parameter `{level}`. They decode with any 32004 plugin, because the
+block size is stored in each chunk header. However, re-encoding such
+a variable with a standard 32004 provider — appending data, `nccopy`
+without `-F`, or `h5repack` keeping filters — takes the level as a
+block size of 1-9 bytes, and the output grows to several times the
+raw size. Rewrite such variables with nep-compress 1.2.0, or with
+`nccopy -F "var,32004,0,0"`.
 
 ## BZIP2: prioritize size
 
@@ -147,9 +165,9 @@ CSV and a table. Reference numbers from the development machine are in
 and
 [reference_machine.txt](https://github.com/captainkirk99/nep-compress/blob/main/performance/reference_machine.txt).
 
-nep-compress retains IDs 32004 and 307 with one-parameter filter
-definitions. Tests check its own write/reopen/read values and filter
-metadata, plus optional reference LZ4 plugin checks. Interchange with
+nep-compress retains IDs 32004 and 307, with the standard
+two-parameter LZ4 definition and the one-parameter BZIP2 definition.
+Tests check its own write/reopen/read values and filter metadata, plus optional reference LZ4 plugin checks. Interchange with
 files written through old NEP, in either direction, is not a release
 requirement; matching IDs alone do not establish such compatibility.
 For JPEG-LS, nep-compress writes the same 32018 parameter layout as
@@ -162,7 +180,14 @@ fcidecomp's own.
   `nf90_def_var_jpegls` and `nf90_inq_var_jpegls` in Fortran, built
   with the new `NEPCOMPRESS_BUILD_JPEGLS` option and
   `NEPCOMPRESS_JPEGLS_PLUGIN_DIR`, plus tests. No behavior change for
-  LZ4 or BZIP2.
+  BZIP2.
+- The LZ4 plugin is now the upstream HDF Group hdf5_plugins source,
+  vendored unchanged (see `plugins/README.md`). `nc_def_var_lz4`
+  stores the standard two parameters `{0, 1 - level}` instead of
+  `{level}`; `nc_inq_var_lz4` accepts both forms (see
+  Interoperability above for the re-encode hazard). The vendored
+  plugin also fixes `*buf_size` on decode and adds output-size
+  overflow guards, and it may print one line on a corrupt chunk.
 - The minimum NetCDF-C is now 4.10.0. `perf_compare_filters` is
   skipped on NetCDF-C older than 4.10.1.
 - A Spack package `nep-compress` (see the README).

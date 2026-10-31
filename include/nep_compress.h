@@ -44,8 +44,9 @@ extern "C" {
  *
  * @param ncid NetCDF file ID, from nc_create() or nc_open().
  * @param varid Variable ID, from nc_def_var() or nc_inq_varid().
- * @param level LZ4 acceleration level, 1 to 9. Higher levels
- * compress faster at the cost of a lower compression ratio.
+ * @param level LZ4 fast-mode acceleration, 1 to 9 (higher is faster,
+ * lower ratio). Stored as the two standard 32004 parameters
+ * {0, 1 - level}: default block size and encoder selector.
  * @return NC_NOERR on success, NC_ENOFILTER if the LZ4 filter plugin
  * is unavailable (checked before the level), NC_EINVAL for an invalid
  * level, or another NetCDF error code.
@@ -66,10 +67,12 @@ int nc_def_var_lz4(int ncid, int varid, int level);
  * @param[out] lz4p If not NULL, set to 1 when the variable uses the
  * LZ4 filter and 0 otherwise. May be NULL.
  * @param[out] levelp If not NULL, set to the LZ4 acceleration level
- * stored with the filter. Written only when LZ4 is present with
- * exactly one parameter. May be NULL.
+ * decoded from the encoder selector. For a one-parameter filter
+ * (written by nep-compress 1.1.0 and earlier, or by other tools as a
+ * block size), the stored value is returned unchanged. May be NULL.
  * @return NC_NOERR on success, NC_EFILTER (with *lz4p set to 1) if the
- * LZ4 filter has a parameter count other than 1, or another NetCDF
+ * LZ4 filter has a parameter count other than 1 or 2, an LZ4HC
+ * encoder selector, or an acceleration above 9, or another NetCDF
  * error code, for example for a bad ID or a non-netCDF-4 file.
  *
  * @author Edward Hartnett, Intelligent Data Design, Inc.

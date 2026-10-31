@@ -112,6 +112,7 @@ if(NEPCOMPRESS_BUILD_LZ4)
     target_include_directories(h5lz4 PRIVATE plugins ${HDF5_INCLUDE_DIRS})
     target_link_libraries(h5lz4 PRIVATE PkgConfig::LZ4 ${HDF5_LIBRARIES})
     install(TARGETS h5lz4 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugin)
+    install(FILES plugins/COPYING.hdf5_plugins DESTINATION ${CMAKE_INSTALL_DOCDIR})
 endif()
 
 if(NEPCOMPRESS_ENABLE_FORTRAN)

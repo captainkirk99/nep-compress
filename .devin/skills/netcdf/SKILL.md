@@ -62,7 +62,7 @@ Key files:
 | szip | 4 | Built into HDF5 if HDF5 has libaec/szip. 2 params in, 4 params reported |
 | bzip2 | 307 | Needs plugin. 1 param, level 1-9 |
 | blosc | 32001 | Needs plugin. 7 params |
-| LZ4 (nep-compress) | 32004 | Needs plugin. Not known to NetCDF-C |
+| LZ4 (nep-compress) | 32004 | Needs plugin. 2 params: block size (0 = 1 GiB), encoder selector (signed; ≥2 HC, 0/1 default, <0 acceleration 1-v) |
 | zstandard | 32015 | Needs plugin. 1 param, level -131072..22 |
 | JPEG-LS (EUMETSAT FCIDECOMP) | 32018 | Needs plugin (fcidecomp / hdf5plugin libh5fcidecomp). 9 user params, 13 stored; near at index 3 / 7 |
 
@@ -285,11 +285,15 @@ Fortran gaps and quirks:
   ID 32019). It therefore has two ID 307 providers (`libh5bz2.so`,
   `lib__nch5bzip2.so`) and a second ID 32004 provider besides
   nep-compress's `build/plugin/libh5lz4.so`. Do not put both LZ4
-  directories on one `HDF5_PLUGIN_PATH`.
+  directories on one `HDF5_PLUGIN_PATH`. The `/usr/local` `libh5lz4.so`
+  is an `e1`-semantics build (it takes `cd_values[0]` as the
+  acceleration), not a standard provider, so do not use it as an LZ4
+  reference; build upstream hdf5_plugins `master` instead.
 
 ## Writing an HDF5 filter plugin
 
-Pattern from `plugins/H5Zbzip2.c` (and nep-compress `plugins/H5Zlz4.c`):
+Pattern from `plugins/H5Zbzip2.c` (nep-compress `plugins/H5Zlz4.c` is
+upstream hdf5_plugins verbatim; see `plugins/README.md`):
 
 ```c
 const H5Z_class2_t H5Z_MYFILTER[1] = {{
@@ -347,9 +351,14 @@ static size_t filter_func(unsigned flags, size_t cd_nelmts, const unsigned cd_va
 
 - `nc_def_var_lz4` checks `nc_inq_filter_avail` first and returns
   `NC_ENOFILTER` if the plugin is missing, then `NC_EINVAL` for a level
-  outside 1-9. `nc_inq_var_lz4` uses `nc_inq_var_filter_info(LZ4_ID)`
-  count-first, finds LZ4 anywhere in the pipeline, and does not need the
-  plugin.
+  outside 1-9. It stores two parameters, `{0, 1 - level}`: default
+  block size and encoder selector. `nc_inq_var_lz4` uses
+  `nc_inq_var_filter_info(LZ4_ID)` count-first, finds LZ4 anywhere in
+  the pipeline, and does not need the plugin. It accepts the
+  one-parameter legacy form (stored value returned as the level) and
+  the two-parameter form (level decoded from the encoder selector: 0/1
+  → 1, negative `e` → `1 - e` if in 2-9, anything else `NC_EFILTER`);
+  any other count is `NC_EFILTER`.
 - `nc_def_var_jpegls` checks `nc_inq_filter_avail` first
   (`NC_ENOFILTER`), then type (`NC_EBADTYPE` unless NC_BYTE/NC_UBYTE/
   NC_SHORT/NC_USHORT), rank (2 or 3), `near` (0-127 / 0-255) and chunk

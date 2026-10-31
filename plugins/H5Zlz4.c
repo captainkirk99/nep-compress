@@ -8,11 +8,22 @@
  * @file H5Zlz4.c
  * @brief HDF5 filter plugin for LZ4 compression (filter ID 32004).
  *
- * Implements the dynamically loaded HDF5 LZ4 filter used by
- * nc_def_var_lz4(). The on-disk chunk encoding is described in
+ * This file is vendored unchanged from HDF Group hdf5_plugins
+ * `LZ4/src/H5Zlz4.c` at commit `4d6b8cec92` (upstream master); only
+ * comments were added. See plugins/README.md for how to update it.
+ *
+ * Filter parameters: `cd_values[0]` is the block size in bytes (0
+ * selects the default of 1 GiB) and `cd_values[1]` is the encoder
+ * selector (0 or 1 for the default fast encoder, a negative value for
+ * fast-mode acceleration `1 - value`, and a value >= 2 for LZ4HC at
+ * that level).
+ *
+ * The on-disk chunk encoding is described in
  * @ref md_plugins_2LZ4__HDF5__format "the LZ4 HDF5 format page".
  *
- * @author Unknown Programmer
+ * Copyright (c) 2017, The HDF Group. See plugins/COPYING.hdf5_plugins.
+ *
+ * @author The HDF Group
  */
 
 #include "lz4_config.h"
@@ -65,6 +76,7 @@
 
 #include "H5PLextern.h"
 #include "lz4.h"
+#include "lz4hc.h"
 
 /**
  * @brief The LZ4 filter callback called by the HDF5 library.
@@ -75,17 +87,18 @@
  *
  * @param flags Filter flags; H5Z_FLAG_REVERSE selects decompression.
  * @param cd_nelmts Number of filter parameters in @p cd_values.
- * @param cd_values Filter parameters; the first, when present, is the
- * LZ4 acceleration level.
+ * @param cd_values Filter parameters; `cd_values[0]` is the block
+ * size in bytes (0 for the 1 GiB default) and `cd_values[1]` is the
+ * encoder selector.
  * @param nbytes Size in bytes of the input data in @p buf.
  * @param buf_size Size in bytes of the buffer pointed to by @p buf.
  * @param buf Pointer to the buffer holding the data; on success it is
  * replaced with the filtered buffer.
  * @return The size of the filtered data, or 0 on failure.
  *
- * @author Unknown Programmer
+ * @author The HDF Group
  */
-size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[],
+static size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[],
                              size_t nbytes, size_t *buf_size, void **buf);
 
 /** LZ4 HDF5 filter ID. */
@@ -115,7 +128,7 @@ size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int c
 /**
  * @brief HDF5 filter class structure for the LZ4 filter.
  *
- * @author Unknown Programmer
+ * @author The HDF Group
  */
 const H5Z_class2_t H5Z_LZ4[1] = {{
     H5Z_CLASS_T_VERS,             /* H5Z_class_t version */
@@ -140,7 +153,7 @@ const H5Z_class2_t H5Z_LZ4[1] = {{
  *
  * @return H5PL_TYPE_FILTER.
  *
- * @author Unknown Programmer
+ * @author The HDF Group
  */
 H5PL_type_t
 H5PLget_plugin_type(void)
@@ -152,7 +165,7 @@ H5PLget_plugin_type(void)
  *
  * @return Pointer to H5Z_LZ4.
  *
- * @author Unknown Programmer
+ * @author The HDF Group
  */
 const void *
 H5PLget_plugin_info(void)
@@ -160,7 +173,54 @@ H5PLget_plugin_info(void)
     return H5Z_LZ4;
 }
 
-size_t
+/* liblz4 caps fast-mode acceleration at LZ4_ACCELERATION_MAX internally but
+ * does not expose the macro in lz4.h; mirror the value from lz4.c here. */
+#ifndef LZ4_ACCELERATION_MAX
+/** Maximum fast-mode acceleration accepted by liblz4. */
+#define LZ4_ACCELERATION_MAX 65537
+#endif
+
+/**
+ * @brief Compress one block, selecting the encoder from the filter
+ * parameter.
+ *
+ * Mirrors liblz4's lz4frame compressionLevel convention: a value >=
+ * LZ4HC_CLEVEL_MIN (2) selects LZ4HC at that level, 0 or 1 selects the
+ * default fast encoder, and a negative value selects fast mode with
+ * acceleration `1 - value`.
+ *
+ * @param src Pointer to the input block.
+ * @param dst Pointer to the output buffer.
+ * @param srcSz Size in bytes of the input block.
+ * @param dstCap Capacity in bytes of the output buffer.
+ * @param encoderParam Encoder selector from `cd_values[1]`.
+ * @return The number of compressed bytes, or 0 on failure.
+ *
+ * @author The HDF Group
+ */
+static int
+lz4_encode(const char *src, char *dst, int srcSz, int dstCap, int encoderParam)
+{
+    /* Mirror liblz4's lz4frame compressionLevel convention:
+     *   >= LZ4HC_CLEVEL_MIN (2) -> LZ4HC at that level
+     *   0 or 1                  -> default fast (acceleration 1)
+     *   < 0                     -> fast, acceleration = -encoderParam + 1
+     * Clamp to the usable range first so the acceleration arithmetic cannot
+     * overflow. */
+    if (encoderParam > LZ4HC_CLEVEL_MAX)
+        encoderParam = LZ4HC_CLEVEL_MAX;
+    if (encoderParam < -(LZ4_ACCELERATION_MAX - 1))
+        encoderParam = -(LZ4_ACCELERATION_MAX - 1);
+
+    if (encoderParam >= LZ4HC_CLEVEL_MIN)
+        return LZ4_compress_HC(src, dst, srcSz, dstCap, encoderParam);
+    else {
+        int acceleration = (encoderParam < 0) ? -encoderParam + 1 : 1;
+        return LZ4_compress_fast(src, dst, srcSz, dstCap, acceleration);
+    }
+}
+
+static size_t
 H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[], size_t nbytes,
                size_t *buf_size, void **buf)
 {
@@ -206,7 +266,7 @@ H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_value
             {
                 int compressedBytes = LZ4_decompress_safe(rpos, roBuf, compressedBlockSize, blockSize);
                 if (compressedBytes != blockSize) {
-                    /* printf("decompressed size not the same: %d, != %d\n", compressedBytes, blockSize); */
+                    printf("decompressed size not the same: %d, != %d\n", compressedBytes, blockSize);
                     goto error;
                 }
             }
@@ -216,14 +276,15 @@ H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_value
             decompSize += blockSize;
         }
         free(*buf);
-        *buf   = outBuf;
-        outBuf = NULL;
+        *buf      = outBuf;
+        *buf_size = (size_t)origSize;
+        outBuf    = NULL;
         ret_value =
             (size_t)origSize; // should always work, as orig_size cannot be > 2GB (sizeof(size_t) < 4GB)
     }
     else /* forward filter */
     {
-        size_t    blockSize = DEFAULT_BLOCK_SIZE;
+        size_t    blockSize;
         size_t    nBlocks;
         size_t    outSize; /* size of the output buffer. Header size (12 bytes) is included */
         size_t    block;
@@ -232,7 +293,9 @@ H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_value
         size_t    maxDestSize;
         char     *rpos;  /* pointer to current read position */
         char     *roBuf; /* pointer to current write position */
-	int      acceleration = 1;
+        int       encoderParam;
+        int       blockBound;
+        size_t    perBlock;
 
         if (nbytes > INT32_MAX) {
             /* can only compress chunks up to 2GB */
@@ -240,13 +303,34 @@ H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_value
         }
 
         if (cd_nelmts > 0 && cd_values[0] > 0) {
-            acceleration = cd_values[0];
+            blockSize = cd_values[0];
         }
+        else {
+            blockSize = DEFAULT_BLOCK_SIZE;
+        }
+        encoderParam = (cd_nelmts > 1) ? (int)cd_values[1] : 0;
         if (blockSize > nbytes) {
             blockSize = nbytes;
         }
-        nBlocks     = (nbytes - 1) / blockSize + 1;
-        maxDestSize = nBlocks * LZ4_compressBound(blockSize) + 4 + 8 + nBlocks * 4;
+        nBlocks = (nbytes - 1) / blockSize + 1;
+
+        /* LZ4_compressBound returns 0 when blockSize exceeds LZ4_MAX_INPUT_SIZE,
+         * which sits ~32 MiB below INT32_MAX -- so a block in that gap passes the
+         * nbytes check above. Reject it before sizing the output buffer; this
+         * also guarantees the (int)blockSize casts below stay in range. */
+        blockBound = LZ4_compressBound((int)blockSize);
+        if (blockBound <= 0)
+            goto error;
+
+        /* Output size = nBlocks * (blockBound + 4-byte block header) + 12-byte
+         * chunk header. Guard the size_t arithmetic before malloc: a tiny
+         * blockSize makes nBlocks huge, and on a 32-bit platform the product
+         * can wrap, yielding an undersized buffer and a heap overflow in the
+         * write loop below. blockBound > 0 here, so perBlock cannot be zero. */
+        perBlock = (size_t)blockBound + 4;
+        if (nBlocks > (SIZE_MAX - 12) / perBlock)
+            goto error;
+        maxDestSize = nBlocks * perBlock + 12;
         if (NULL == (outBuf = malloc(maxDestSize))) {
             goto error;
         }
@@ -264,15 +348,14 @@ H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts, const unsigned int cd_value
 
         outSize = 12; /* size of the output buffer. Header size (12 bytes) is included */
 
-        /* printf("nbytes %ld nBlocks %ld\n", nbytes, nBlocks); */
         for (block = 0; block < nBlocks; ++block) {
             uint32_t compBlockSize; /// reserve space for compBlockSize
             size_t   origWritten = block * blockSize;
             if (nbytes - origWritten < blockSize) /* the last block may be < blockSize */
                 blockSize = nbytes - origWritten;
 
-            compBlockSize = LZ4_compress_fast(
-                rpos, roBuf + 4, blockSize, LZ4_compressBound(blockSize), acceleration); /// reserve space for compBlockSize
+            compBlockSize = lz4_encode(rpos, roBuf + 4, (int)blockSize, LZ4_compressBound((int)blockSize),
+                                       encoderParam); /// reserve space for compBlockSize
             if (!compBlockSize)
                 goto error;
             if (compBlockSize >= blockSize) /* compression did not save any space, do a memcpy instead */

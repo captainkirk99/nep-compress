@@ -22,11 +22,6 @@
  * generally cosists of several sets of tests. */
 static int total_err = 0, err = 0; /* Errors in this set of tests. */
 
-/* External LZ4 filter function under test. */
-size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
-                      const unsigned int cd_values[], size_t nbytes,
-                      size_t *buf_size, void **buf);
-
 /*
  * Run the test program.
  *
@@ -56,7 +51,7 @@ main()
         int data_in[NX][NY], data_out[NX][NY];
         hsize_t fdims[NDIMS], fmaxdims[NDIMS];
         hsize_t chunksize[NDIMS], dimsize[NDIMS], maxdimsize[NDIMS];
-        const unsigned cd_values[1] = {3};          /* LZ4 default level is 3 */
+        const unsigned cd_values[2] = {0, 0};       /* default block size, default encoder */
         int x, y;
         /* const H5Z_class2_t H5Z_LZ4[1] = {{ */
         /*         H5Z_CLASS_T_VERS,       /\* H5Z_class_t version *\/ */
@@ -106,7 +101,7 @@ main()
 
         /* Set up compression. */
         if (H5Pset_filter (plistid, (H5Z_filter_t)LZ4_ID, H5Z_FLAG_MANDATORY,
-                           (size_t)1, cd_values) < 0) ERR;
+                           (size_t)2, cd_values) < 0) ERR;
 
         /* Create the variable. */
         if ((datasetid = H5Dcreate2(grpid, SIMPLE_VAR_NAME, H5T_NATIVE_INT,

@@ -7,25 +7,31 @@
 #include "nep_compress.h"
 
 #ifdef NEPCOMPRESS_BUILD_LZ4
+/** Number of parameters stored for filter 32004: block size and
+ * encoder selector. */
+#define LZ4_NPARAMS 2
+
 int
 nc_def_var_lz4(int ncid, int varid, int level)
 {
-    unsigned int value;
+    unsigned int params[LZ4_NPARAMS];
     int ret;
 
     if ((ret = nc_inq_filter_avail(ncid, LZ4_ID)))
         return ret;
     if (level < 1 || level > 9)
         return NC_EINVAL;
-    value = (unsigned int)level;
-    return nc_def_var_filter(ncid, varid, LZ4_ID, 1, &value);
+    params[0] = 0;
+    params[1] = (unsigned int)(1 - level);
+    return nc_def_var_filter(ncid, varid, LZ4_ID, LZ4_NPARAMS, params);
 }
 
 int
 nc_inq_var_lz4(int ncid, int varid, int *lz4p, int *levelp)
 {
     size_t nparams;
-    unsigned int level;
+    unsigned int params[LZ4_NPARAMS];
+    int level;
     int ret;
 
     if (lz4p)
@@ -37,12 +43,25 @@ nc_inq_var_lz4(int ncid, int varid, int *lz4p, int *levelp)
         return ret;
     if (lz4p)
         *lz4p = 1;
-    if (nparams != 1)
+    if (nparams != 1 && nparams != LZ4_NPARAMS)
         return NC_EFILTER;
-    if ((ret = nc_inq_var_filter_info(ncid, varid, LZ4_ID, &nparams, &level)))
+    if ((ret = nc_inq_var_filter_info(ncid, varid, LZ4_ID, &nparams, params)))
         return ret;
+    if (nparams == 1)
+        level = (int)params[0];
+    else
+    {
+        int e = (int)params[1];
+
+        if (e == 0 || e == 1)
+            level = 1;
+        else if (e < 0 && 1 - e <= 9)
+            level = 1 - e;
+        else
+            return NC_EFILTER;
+    }
     if (levelp)
-        *levelp = (int)level;
+        *levelp = level;
     return NC_NOERR;
 }
 #endif

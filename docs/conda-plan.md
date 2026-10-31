@@ -9,9 +9,9 @@ the generated staged copy on every push.
 
 ## Prerequisites
 
-- The GitHub accounts `edhartnett` and `captainkirk99` (both are
-  listed as recipe maintainers; conda-forge requires each named
-  maintainer to confirm in the PR).
+- The GitHub accounts `captainkirk99` (Ed Hartnett) and `czender`
+  (Charlie Zender, zender@uci.edu), both listed as recipe maintainers;
+  conda-forge requires each named maintainer to confirm in the PR.
 - `rattler-build` and `conda-smithy` in the conda env
   `/fast/ed/tmp-conda/env` (created by the first command in section 1;
   neither is packaged for apt). They are not on `PATH`, so call them as
@@ -99,7 +99,7 @@ hold for this recipe:
 
 The body:
 
-- Names both maintainers and asks `@edhartnett` to comment that he is
+- Names both maintainers and asks `@czender` to comment that he is
   willing to maintain the feedstock (conda-forge requires every named
   maintainer to confirm in the PR).
 - Explains that the LZ4 plugin is installed in HDF5's default plugin
@@ -110,7 +110,7 @@ The body:
 
 ## 5. Review and feedstock creation
 
-- When the staged-recipes CI is green and `@edhartnett` has
+- When the staged-recipes CI is green and `@czender` has
   confirmed, ask for review. The template asks for a comment
   `@conda-forge/help-c-cpp, ready for review!`, but first-time
   contributors cannot ping teams; in that case comment

@@ -46,6 +46,22 @@ From [*Earth Observation in Practice: A Mission-by-Mission Guide to Reading Sate
   uncompressed by an `nc_def_var_jpegls` call that returned
   `NC_NOERR`.
 
+## LZ4
+
+- The LZ4 plugin source is now the upstream HDF Group hdf5_plugins
+  `LZ4/src/H5Zlz4.c` at commit `4d6b8ce`, vendored unchanged apart
+  from added comments (see `plugins/README.md`; the HDF Group notice
+  is `plugins/COPYING.hdf5_plugins`). The previous source was a fork
+  that took `cd_values[0]` as the LZ4 acceleration.
+- `nc_def_var_lz4(ncid, varid, level)` keeps its signature and meaning
+  (fast-mode acceleration 1-9) but stores the standard two-parameter
+  form `{0, 1 - level}`: default block size and encoder selector.
+  `nc_inq_var_lz4` reads both the new form and the old one-parameter
+  form.
+- Interoperating with other 32004 providers — hdf5plugin, the HDF
+  Group builds and conda's `hdf5-external-filter-plugins-lz4` — now
+  produces the same encoding.
+
 ## Build
 
 - New option `NEPCOMPRESS_BUILD_JPEGLS` (default OFF) builds the C and
@@ -107,6 +123,17 @@ install the package.
   conda-forge pinnings, runs the full CTest suite inside the conda
   build, runs the package tests, and lints the generated
   staged-recipes copy.
+- `tst_lz4` and `compat_file` now check the two stored LZ4
+  parameters, and `tst_lz4_filters` covers every inquiry parameter
+  form.
+- New `lz4_large_size` and `lz4_reference_large_size` tests write a
+  large variable through each LZ4 provider and fail if the file
+  exceeds a size bound, catching a provider that reads the level as a
+  block size.
+- The LZ4 CI jobs set `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` to
+  hdf5plugin's plugin directory, so the cross-provider tests
+  (`lz4_new_to_reference`, `lz4_reference_to_new`,
+  `lz4_wrong_provider`) now run in CI.
 
 ## Requirements
 
@@ -118,7 +145,16 @@ needs an external HDF5 plugin for ID 32018.
 
 ## Upgrading
 
-No changes for existing users: JPEG-LS is off by default and adds two
-exported C symbols, an additive change. `SOVERSION` stays 1.
+JPEG-LS is off by default and adds two exported C symbols, an
+additive change. `SOVERSION` stays 1.
+
+LZ4 needs attention: files written by nep-compress 1.1.0 and earlier
+store a single parameter `{level}`. They decode with any 32004
+plugin, but re-encoding such a variable with a standard 32004
+provider — appending data, `nccopy` without `-F`, or `h5repack`
+keeping filters — takes the level as a block size of 1-9 bytes and
+the output grows to several times the raw size. Rewrite such
+variables with nep-compress 1.2.0, or with
+`nccopy -F "var,32004,0,0"`.
 
 Author: Edward Hartnett, Intelligent Data Design, Inc.

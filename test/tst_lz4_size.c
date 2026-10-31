@@ -28,7 +28,7 @@
 /* Rank (2) of the test variable. */
 #define NDIM2 2
 /* Number of parameters passed to the filter. */
-#define NPARAM 1
+#define NPARAM 2
 /* Number of test files. */
 #define NFILE 2
 /* Maximum filter name buffer length. */
@@ -38,11 +38,6 @@
  * total_err is the number of errors in the entire test program, which
  * generally cosists of several sets of tests. */
 static int total_err = 0, err = 0; /* Errors in this set of tests. */
-
-/* External LZ4 filter function under test. */
-size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
-                      const unsigned int cd_values[], size_t nbytes,
-                      size_t *buf_size, void **buf);
 
 /*
  * Run the test program.
@@ -57,10 +52,10 @@ main (void)
     hid_t file_id = -1, space_id = -1, dset_id = -1, dcpl_id = -1;
     char filter_name[MAX_NAME + 1];
     hsize_t dims[NDIM2] = {DIM0, DIM1}, chunk[NDIM2] = {CHUNK0, CHUNK1};
-    size_t nelmts = 1; /* number of elements in cd_values */
+    size_t nelmts = 2; /* number of elements in cd_values */
     unsigned int flags;
     unsigned filter_config;
-    const unsigned int cd_values[NPARAM] = {3};     /* lz4 default is 3 */
+    const unsigned int cd_values[NPARAM] = {0, 0};  /* default block size, default encoder */
     unsigned int values_out[NPARAM];
     int wdata[DIM0][DIM1], rdata[DIM0][DIM1];
     hsize_t f, i, j;

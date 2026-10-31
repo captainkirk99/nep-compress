@@ -26,6 +26,8 @@ protien folding database formats. See the project website for more info.
 ## Implementation Details
 
 nep-compress **builds an LZ4 HDF5 plugin** (`libh5lz4.so`, filter ID 32004).
+The plugin source is the HDF Group hdf5_plugins LZ4 filter, vendored
+unchanged; see [plugins/README.md](plugins/README.md) for provenance.
 For BZIP2 (ID 307), it builds the C/Fortran API but requires a compatible
 **external HDF5 BZIP2 plugin** for both writing and reading. `libbz2` alone
 is not a plugin. BZIP2 is OFF by default. For JPEG-LS (ID 32018), it builds
@@ -131,8 +133,11 @@ equivalent if a custom NetCDF or HDF5 is installed.
 | `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
 | `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
 | `BUILD_TESTING` | ON | Register C, HDF5 and optional Fortran tests |
-| `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` | empty | Run optional read/write tests with an older LZ4 plugin |
+| `NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR` | empty | Run optional cross-provider and size tests against an independent LZ4 (32004) plugin directory, e.g. hdf5plugin's |
 | `NEPCOMPRESS_BUILD_DOCS` | OFF | Add a `docs` target that builds Doxygen HTML documentation |
+
+The LZ4 plugin source is © The HDF Group under
+`plugins/COPYING.hdf5_plugins`.
 
 ## Install with Spack
 
