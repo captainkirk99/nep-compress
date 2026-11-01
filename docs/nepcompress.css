@@ -1,0 +1,10 @@
+/*
+ * Extra stylesheet for the nep-compress Doxygen site: larger body
+ * text than Doxygen's default 14px.
+ *
+ * Author: Edward Hartnett, Intelligent Data Design, Inc.
+ */
+body, table, div, p, dl {
+	font-size: 18px;
+	line-height: 28px;
+}
