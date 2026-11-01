@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['name_0',['name',['../structfilter__config.html#ad380cd82e08dd50b97416df69dfdbcb0',1,'filter_config']]],
+  ['nc_5fdef_5fvar_5fjpegls_1',['nc_def_var_jpegls',['../nep__compress_8h.html#a1d4148b1d4ad5711e29fcaef40450828',1,'nc_def_var_jpegls(int ncid, int varid, int near):&#160;nep_compress.c'],['../nep__compress_8c.html#a1d4148b1d4ad5711e29fcaef40450828',1,'nc_def_var_jpegls(int ncid, int varid, int near):&#160;nep_compress.c']]],
+  ['nc_5fdef_5fvar_5flz4_2',['nc_def_var_lz4',['../nep__compress_8h.html#a477c9b3f7eed40be4b8d32d502711e32',1,'nc_def_var_lz4(int ncid, int varid, int level):&#160;nep_compress.c'],['../nep__compress_8c.html#a477c9b3f7eed40be4b8d32d502711e32',1,'nc_def_var_lz4(int ncid, int varid, int level):&#160;nep_compress.c']]],
+  ['nc_5finq_5fvar_5fjpegls_3',['nc_inq_var_jpegls',['../nep__compress_8h.html#a9a00bcfc5f5b91d1d1c5f8e19ce1544a',1,'nc_inq_var_jpegls(int ncid, int varid, int *jpeglsp, int *nearp):&#160;nep_compress.c'],['../nep__compress_8c.html#a9a00bcfc5f5b91d1d1c5f8e19ce1544a',1,'nc_inq_var_jpegls(int ncid, int varid, int *jpeglsp, int *nearp):&#160;nep_compress.c']]],
+  ['nc_5finq_5fvar_5flz4_4',['nc_inq_var_lz4',['../nep__compress_8c.html#a1a289305ec3cc2b7c6923aac3983b8c6',1,'nc_inq_var_lz4(int ncid, int varid, int *lz4p, int *levelp):&#160;nep_compress.c'],['../nep__compress_8h.html#a1a289305ec3cc2b7c6923aac3983b8c6',1,'nc_inq_var_lz4(int ncid, int varid, int *lz4p, int *levelp):&#160;nep_compress.c']]],
+  ['nconfigs_5',['NCONFIGS',['../compare__filters_8c.html#afa438439233ca788018a3a12cfdc54be',1,'compare_filters.c']]],
+  ['nep_20compress_6',['nep compress',['../index.html',1,'nep-compress'],['../index.html#autotoc_md0',1,'What is nep-compress?']]],
+  ['nep_5fcompress_7',['nep_compress',['../namespacenep__compress.html',1,'']]],
+  ['nep_5fcompress_2ec_8',['nep_compress.c',['../nep__compress_8c.html',1,'']]],
+  ['nep_5fcompress_2ef90_9',['nep_compress.F90',['../nep__compress_8F90.html',1,'']]],
+  ['nep_5fcompress_2eh_10',['nep_compress.h',['../nep__compress_8h.html',1,'']]],
+  ['netcdf_204_20compression_20filter_20comparison_11',['NetCDF-4 compression filter comparison',['../index.html#autotoc_md2',1,'']]],
+  ['nf90_5fdef_5fvar_5fbzip2_12',['nf90_def_var_bzip2',['../namespacenep__compress.html#a4992ae4936ecd773d397e8a30420df57',1,'nep_compress']]],
+  ['nf90_5fdef_5fvar_5fjpegls_13',['nf90_def_var_jpegls',['../namespacenep__compress.html#af42d9ee569a2420dcd013f881ea17ae6',1,'nep_compress']]],
+  ['nf90_5fdef_5fvar_5flz4_14',['nf90_def_var_lz4',['../namespacenep__compress.html#a64577f030f0873743ccc573f69e93ac0',1,'nep_compress']]],
+  ['nf90_5finq_5fvar_5fbzip2_15',['nf90_inq_var_bzip2',['../namespacenep__compress.html#aedf6032bbd6eff03ef3212ce1c5e68df',1,'nep_compress']]],
+  ['nf90_5finq_5fvar_5fjpegls_16',['nf90_inq_var_jpegls',['../namespacenep__compress.html#a8e44b3519555f31958bcc670af55c356',1,'nep_compress']]],
+  ['nf90_5finq_5fvar_5flz4_17',['nf90_inq_var_lz4',['../namespacenep__compress.html#aed36fe7922f2b0f9e9bfd09f73fa4c59',1,'nep_compress']]],
+  ['nfields_18',['NFIELDS',['../compare__filters_8c.html#a7986f01c038f396ce7df280bb2903099',1,'compare_filters.c']]],
+  ['nreps_19',['NREPS',['../compare__filters_8c.html#aea133d3d9d5d2237a8a9410cce45c022',1,'compare_filters.c']]],
+  ['ntohll_20',['ntohll',['../H5Zlz4_8c.html#a3cfcf123d4ead264289232f91f2c9ca5',1,'H5Zlz4.c']]],
+  ['nvals_21',['nvals',['../bzip2_8c.html#a2a2272117c7efa409e9f782cee4f05c9',1,'NVALS:&#160;bzip2.c'],['../lz4_8c.html#a2a2272117c7efa409e9f782cee4f05c9',1,'NVALS:&#160;lz4.c'],['../compare__filters_8c.html#a2a2272117c7efa409e9f782cee4f05c9',1,'NVALS:&#160;compare_filters.c']]],
+  ['nx_22',['nx',['../bzip2_8c.html#a4a9d32ff035c82119003134767948ebf',1,'NX:&#160;bzip2.c'],['../lz4_8c.html#a4a9d32ff035c82119003134767948ebf',1,'NX:&#160;lz4.c'],['../compare__filters_8c.html#a4a9d32ff035c82119003134767948ebf',1,'NX:&#160;compare_filters.c']]],
+  ['ny_23',['ny',['../bzip2_8c.html#a652e87ecc9140879666ae9d6bf4ca893',1,'NY:&#160;bzip2.c'],['../lz4_8c.html#a652e87ecc9140879666ae9d6bf4ca893',1,'NY:&#160;lz4.c'],['../compare__filters_8c.html#a652e87ecc9140879666ae9d6bf4ca893',1,'NY:&#160;compare_filters.c']]],
+  ['nz_24',['nz',['../bzip2_8c.html#a693aee47b2103d0a7fcd3a0a0dd4fb57',1,'NZ:&#160;bzip2.c'],['../lz4_8c.html#a693aee47b2103d0a7fcd3a0a0dd4fb57',1,'NZ:&#160;lz4.c']]]
+];
