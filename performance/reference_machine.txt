@@ -1,12 +1,19 @@
-Run date: 2026-10-26 15:50 UTC
+Run date: 2026-11-01 22:07 UTC
+nep-compress: 1.2.0 (v1.2.0)
 CPU: Intel(R) Core(TM) i7-6800K CPU @ 3.40GHz
 Cores: 12
 OS: Linux 6.8.0-137-generic
-Compiler: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
-netCDF 4.10.2-development
-HDF5: 2.1.1
-LZ4 provider: build/plugin/libh5lz4.so (nep-compress)
-BZIP2 provider: /home/ed/plugins/bzip2-only/lib__nch5bzip2.so -> /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5bzip2.so
-zstd provider: /home/ed/plugins/zstd-only/lib__nch5zstd.so -> /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5zstd.so
+Compiler: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+NetCDF-C: 4.10.2-development 5baa62e69 (/usr/local/netcdf-c/lib/libnetcdf.so.22), CFLAGS -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -g -Wall -Wconversion, build type Debug
+HDF5: 2.1.1 (/usr/local/hdf5-2.1.1/lib/libhdf5.so.320)
+lz4: 1.9.4-1build1.1
+zstd: 1.5.5+dfsg2-2build1.1
+bzip2: 1.0.8-5.1ubuntu0.1
+libaec: 1.1.2-1build1
+zlib: 1:1.3.dfsg-3.1ubuntu2.3
+LZ4 provider: /fast/ed/nep-compress-v1.2.0/build-perf/plugin/libh5lz4.so sha256 3aa4a1b55e60e5247ba0ffc68ebc240a6c4522ccfc5cf7da7774f00e093f1457 (nep-compress, vendored HDF Group plugin)
+BZIP2 provider: /home/ed/plugins/bzip2-only/lib__nch5bzip2.so -> /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5bzip2.so sha256 7af6fe0f5eac006cdb5ecf26e2ac0c93ccaf444fdd67b31f631d03fbc45b8d0a links libhdf5.so.320 => /usr/local/hdf5-2.1.1/lib/libhdf5.so.320
+zstd provider: /home/ed/plugins/zstd-only/lib__nch5zstd.so -> /usr/local/netcdf-c/hdf5/lib/plugin/lib__nch5zstd.so sha256 0c1cc9d1abff8aae42751e41498f094b2b0fc39b16af9304e7e0280d14057ccf links libhdf5.so.320 => /usr/local/hdf5-2.1.1/lib/libhdf5.so.320
 NREPS: 3
 Sample: test/data/gdas_sfc_sample.nc
+Plotting: Python 3.13.9, matplotlib 3.10.9

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(nepcompress VERSION 1.2.0 LANGUAGES C)
+project(nepcompress VERSION 1.3.0 LANGUAGES C)
 
 include(GNUInstallDirs)
 include(CTest)

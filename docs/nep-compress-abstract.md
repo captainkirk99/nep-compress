@@ -20,7 +20,7 @@ every lossless NetCDF-4 filter and measures compression ratio and
 write/read throughput end to end. In the reference run, LZ4 with
 shuffle was the fastest writer and reader of the compressors in every
 field at the plotted, shuffle-on settings, and zstd level 1 with
-shuffle matched deflate's compression ratio at 1.7 to 4 times its
+shuffle matched deflate's compression ratio at 1.7 to 5 times its
 write speed. nep-compress builds with CMake, installs through Spack
 or conda, and is released as open source under the MIT license.
 
@@ -184,10 +184,14 @@ uncompressed field size divided by the size of the whole file on
 disk, so the "none" points sit just below 1.0. Every run was read
 back and checked bit-for-bit; all filters measured are lossless.
 
-The reference run was made on 2026-10-26 on an Intel Core i7-6800K at
-3.40 GHz (12 cores) running Linux 6.8.0-137, with gcc 13.3.0, netCDF
-4.10.2-development and HDF5 2.1.1. To measure your own data on your
-own machine, see `performance/README.md`.
+These results were generated on 2026-11-01 with nep-compress 1.2.0
+(its vendored HDF Group LZ4 plugin), NetCDF-C 4.10.2-development
+(`main` at `5baa62e69`, a `-g` build without optimization, with its
+zstd and BZIP2 plugins), HDF5 2.1.1, lz4 1.9.4, zstd 1.5.5, bzip2
+1.0.8, libaec 1.1.2 and zlib 1.3, built with gcc 13.3.0 on an Intel
+Core i7-6800K at 3.40 GHz (12 cores, Linux 6.8.0-137). Graphs drawn
+with matplotlib 3.10.9. To measure your own data on your own machine,
+see `performance/README.md`.
 
 ## Reference Results
 
@@ -196,19 +200,20 @@ Shuffle on, the level plotted in Figures 1 and 2. Ratio / write MB/s
 
 | Filter | Level | tmp2m | prate_ave | soilw1 | land |
 | --- | --- | --- | --- | --- | --- |
-| none | - | 1.00 / 259 / 721 | 1.00 / 367 / 1188 | 1.00 / 379 / 1086 | 1.00 / 385 / 1175 |
-| deflate | 1 | 1.88 / 63 / 356 | 1.40 / 51 / 254 | 5.46 / 130 / 502 | 54.67 / 235 / 884 |
-| szip | 32 | 1.83 / 108 / 144 | 1.15 / 91 / 100 | 3.24 / 119 / 159 | 7.75 / 139 / 201 |
-| zstd | 1 | 1.87 / 254 / 788 | 1.42 / 177 / 702 | 5.45 / 292 / 1224 | 87.62 / 394 / 1475 |
-| bzip2 | 1 | 2.07 / 17 / 38 | 1.48 / 13 / 28 | 6.21 / 29 / 94 | 122.99 / 93 / 329 |
-| LZ4 | 9 | 1.76 / 342 / 1103 | 1.27 / 294 / 988 | 4.93 / 387 / 1431 | 40.82 / 417 / 1591 |
+| none | - | 1.00 / 235 / 773 | 1.00 / 375 / 1555 | 1.00 / 378 / 1569 | 1.00 / 383 / 1555 |
+| deflate | 1 | 1.88 / 51 / 287 | 1.40 / 51 / 265 | 5.46 / 109 / 473 | 54.67 / 232 / 898 |
+| szip | 32 | 1.83 / 103 / 137 | 1.15 / 88 / 100 | 3.24 / 121 / 162 | 7.75 / 138 / 203 |
+| zstd | 1 | 1.87 / 255 / 718 | 1.42 / 170 / 829 | 5.45 / 297 / 1298 | 87.62 / 394 / 1485 |
+| bzip2 | 1 | 2.07 / 17 / 38 | 1.48 / 13 / 29 | 6.21 / 31 / 97 | 122.99 / 92 / 325 |
+| LZ4 | 9 | 1.76 / 337 / 1260 | 1.27 / 293 / 1193 | 4.93 / 379 / 1460 | 40.82 / 426 / 1602 |
 
 ## Figure 1: Write Throughput
 
-![Compression ratio vs write throughput for none, deflate 1, szip 32, zstd 1, bzip2 1 and LZ4 9, shuffle on, on four GDAS surface fields](images/compare_filters_write_simple.png)
+![Compression ratio vs write throughput for none, deflate 1, szip 32, zstd 1, bzip2 1 and LZ4 9, shuffle on, on four GDAS surface fields; generated 2026-11-01 with nep-compress 1.2.0](images/compare_filters_write_simple.png)
 
 **Figure 1.** Compression ratio versus write throughput, one setting
-per filter, shuffle on. Each panel is one field: `tmp2m`,
+per filter, shuffle on. Generated 2026-11-01 with nep-compress 1.2.0,
+NetCDF-C 4.10.2-development (`5baa62e69`) and HDF5 2.1.1. Each panel is one field: `tmp2m`,
 `prate_ave`, `soilw1` and `land`. The x axis is write throughput in
 MB/s on a logarithmic scale; further right is faster. The y axis is
 the compression ratio; higher means smaller files. The y axis is
@@ -228,43 +233,45 @@ spread in ratio is about 3x, from LZ4's 40.82 to bzip2's 122.99.
 
 ## Figure 2: Read Throughput
 
-![Compression ratio vs read throughput for none, deflate 1, szip 32, zstd 1, bzip2 1 and LZ4 9, shuffle on, on four GDAS surface fields](images/compare_filters_read_simple.png)
+![Compression ratio vs read throughput for none, deflate 1, szip 32, zstd 1, bzip2 1 and LZ4 9, shuffle on, on four GDAS surface fields; generated 2026-11-01 with nep-compress 1.2.0](images/compare_filters_read_simple.png)
 
 **Figure 2.** Compression ratio versus read throughput for the same
 runs as Figure 1, so each point has the same height in both figures
-and only the x positions move. Axes, panels and markers are the
+and only the x positions move. Generated 2026-11-01 with nep-compress
+1.2.0, NetCDF-C 4.10.2-development (`5baa62e69`) and HDF5 2.1.1. Axes, panels and markers are the
 same as in Figure 1. Reads are faster than writes for every
 compressor.
 
 LZ4 is again the rightmost compressor in every panel, with zstd 1
-close behind (702-1475 MB/s). bzip2 reads at 28-329 MB/s, the
-slowest in three panels; on `land`, szip is slower still (201 vs
-329 MB/s). szip reads slower than deflate in every field.
+close behind (718-1485 MB/s). bzip2 reads at 29-325 MB/s, the
+slowest in three panels; on `land`, szip is slower still (203 vs
+325 MB/s). szip reads slower than deflate in every field.
 
 ## Conclusions
 
 - **General use:** zstd level 1 with shuffle. It matched deflate 1's
   ratio within 0.02 on `tmp2m`, `prate_ave` and `soilw1`, and beat
-  it on `land` (87.62 vs 54.67), while writing 1.7-4.0 times faster
-  (394 vs 235 MB/s on `land`, 254 vs 63 MB/s on `tmp2m`) and
-  reading 1.7-2.8 times faster. All readers need the zstd plugin.
+  it on `land` (87.62 vs 54.67), while writing 1.7-5.0 times faster
+  (394 vs 232 MB/s on `land`, 255 vs 51 MB/s on `tmp2m`) and
+  reading 1.7-3.1 times faster. All readers need the zstd plugin.
 - **Portability:** deflate level 1 with shuffle. It is the only
   compressor here that is built into every HDF5 library, so any
   NetCDF-4 reader can open the file with no plugin.
 - **Speed:** LZ4 with shuffle was the fastest writer and reader of
   the plotted compressors in every field. Its ratio is 6% (`tmp2m`),
   10% (`prate_ave`), 10% (`soilw1`) and 53% (`land`) below zstd 1's.
-  On `tmp2m`, `soilw1` and `land` it even wrote and read faster than
-  the shuffle-only "none" point (`tmp2m` 342 vs 259 MB/s write),
-  because less data reaches disk; on `prate_ave`, which barely
-  compresses, it was slower (294 vs 367 MB/s write, 988 vs 1188 MB/s
-  read). Writing with no filters at all is still faster (`tmp2m`
-  938 MB/s). LZ4 suits scratch files, checkpoints and data that is
-  read many times.
+  On `tmp2m`, `soilw1` and `land` it even wrote faster than the
+  shuffle-only "none" point (`tmp2m` 337 vs 235 MB/s), because less
+  data reaches disk, and on `tmp2m` and `land` it also read faster
+  (`tmp2m` 1260 vs 773 MB/s). On `prate_ave`, which barely
+  compresses, it was slower (293 vs 375 MB/s write, 1193 vs
+  1555 MB/s read). Writing with no filters at all is still faster
+  (`tmp2m` 1093 MB/s). LZ4 suits
+  scratch files, checkpoints and data that is read many times.
 - **Smallest files:** bzip2 1 had the highest ratio in every field,
-  but wrote at 13-93 MB/s and read at 28-329 MB/s. zstd level 19
+  but wrote at 13-92 MB/s and read at 29-325 MB/s. zstd level 19
   with shuffle (`tmp2m` ratio 1.98, written at 7 MB/s, read at
-  826 MB/s) is the better archive choice when the data is read
+  899 MB/s) is the better archive choice when the data is read
   often.
 - **Shuffle:** it helps continuous float fields. Without it, LZ4 did
   not compress `tmp2m` at all (ratio 0.998 vs 1.76 with shuffle). It

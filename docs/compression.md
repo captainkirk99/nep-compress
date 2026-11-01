@@ -164,6 +164,9 @@ CSV and a table. Reference numbers from the development machine are in
 [reference_results.csv](https://github.com/captainkirk99/nep-compress/blob/main/performance/reference_results.csv)
 and
 [reference_machine.txt](https://github.com/captainkirk99/nep-compress/blob/main/performance/reference_machine.txt).
+The reference run was made on 2026-11-01 with nep-compress 1.2.0; the
+versions of NetCDF-C, HDF5 and the compression libraries are in
+reference_machine.txt.
 
 nep-compress retains IDs 32004 and 307, with the standard
 two-parameter LZ4 definition and the one-parameter BZIP2 definition.
