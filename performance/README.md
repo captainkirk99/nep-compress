@@ -35,7 +35,32 @@ ctest -LE performance             # everything except them
 The CSV lands in
 `build/performance/perf_compare_filters/compare_filters.csv`.
 `reference_results.csv` and `reference_machine.txt` in this directory
-record a run on the development machine.
+record the 2026-11-01 run of nep-compress 1.2.0 on the development
+machine.
+
+The BZIP2 and zstd plugin directories should hold plugins linked to
+the same HDF5 library as NetCDF-C; check with
+`ldd <dir>/lib*.so | grep libhdf5`.
+
+## Recording the machine
+
+`record_machine.sh` writes the machine and library record in the
+format of `reference_machine.txt`. It records the date, the
+nep-compress version and commit, the CPU, OS and compiler, the
+NetCDF-C, HDF5, lz4, zstd, bzip2, libaec and zlib versions, and the
+path, sha256 and HDF5 linkage of each plugin. Run it right after the
+measured run, with the same `LD_LIBRARY_PATH`:
+
+```sh
+NETCDF_C_SOURCE=/path/to/netcdf-c \
+  performance/record_machine.sh build performance/reference_machine.txt
+```
+
+Usage: `record_machine.sh BUILD_DIR OUTPUT [SOURCE_DIR]`. `SOURCE_DIR`
+defaults to this repository. `NETCDF_C_SOURCE` is optional; when set,
+the NetCDF-C commit and build type are recorded too. The script exits
+1 if the build has no `compare_filters` or LZ4 plugin, or if a plugin
+directory does not hold exactly one plugin.
 
 ## Plotting
 
@@ -46,6 +71,9 @@ python3 performance/plot_compare_filters.py \
   build/performance/perf_compare_filters/compare_filters.csv \
   /tmp/compare_filters
 ```
+
+The committed graphs were made with
+`python3 performance/plot_compare_filters.py performance/reference_results.csv docs/images/compare_filters`.
 
 It writes `<prefix>_write.png`, `<prefix>_read.png`,
 `<prefix>_write_simple.png` and `<prefix>_read_simple.png`: 2x2 panels,

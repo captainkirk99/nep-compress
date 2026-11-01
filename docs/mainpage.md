@@ -106,26 +106,34 @@ The table below shows the shuffle-on rows for two of the fields:
 `tmp2m` (smooth 2 m temperature) and `prate_ave` (noisy precipitation
 rate).
 
+These results, and the graphs below, were generated on 2026-11-01
+with nep-compress 1.2.0 (its vendored HDF Group LZ4 plugin), NetCDF-C
+4.10.2-development (`main` at `5baa62e69`, a `-g` build without
+optimization, with its zstd and BZIP2 plugins), HDF5 2.1.1, lz4
+1.9.4, zstd 1.5.5, bzip2 1.0.8, libaec 1.1.2 and zlib 1.3, built with
+gcc 13.3.0 on an Intel Core i7-6800K (12 cores, Linux 6.8.0-137).
+Graphs drawn with matplotlib 3.10.9.
+
 | Filter | Level | tmp2m ratio | tmp2m write MB/s | tmp2m read MB/s | prate_ave ratio | prate_ave write MB/s | prate_ave read MB/s |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| none | 0 | 1.00 | 259 | 721 | 1.00 | 367 | 1188 |
-| deflate | 1 | 1.88 | 63 | 356 | 1.40 | 51 | 254 |
-| deflate | 5 | 1.90 | 54 | 358 | 1.44 | 39 | 263 |
-| deflate | 9 | 1.92 | 14 | 380 | 1.45 | 5 | 275 |
-| szip | 32 | 1.83 | 108 | 144 | 1.15 | 91 | 100 |
-| zstd | 1 | 1.87 | 254 | 788 | 1.42 | 177 | 702 |
-| zstd | 3 | 1.88 | 219 | 700 | 1.43 | 103 | 795 |
-| zstd | 9 | 1.91 | 89 | 790 | 1.45 | 44 | 574 |
-| zstd | 19 | 1.98 | 7 | 826 | 1.48 | 5 | 698 |
-| bzip2 | 1 | 2.07 | 17 | 38 | 1.48 | 13 | 28 |
-| bzip2 | 9 | 2.06 | 16 | 31 | 1.48 | 12 | 23 |
-| lz4 | 1 | 1.76 | 328 | 1101 | 1.31 | 258 | 953 |
-| lz4 | 9 | 1.76 | 342 | 1103 | 1.27 | 294 | 988 |
+| none | 0 | 1.00 | 235 | 773 | 1.00 | 375 | 1555 |
+| deflate | 1 | 1.88 | 51 | 287 | 1.40 | 51 | 265 |
+| deflate | 5 | 1.90 | 49 | 331 | 1.44 | 37 | 272 |
+| deflate | 9 | 1.92 | 14 | 364 | 1.45 | 5 | 280 |
+| szip | 32 | 1.83 | 103 | 137 | 1.15 | 88 | 100 |
+| zstd | 1 | 1.87 | 255 | 718 | 1.42 | 170 | 829 |
+| zstd | 3 | 1.88 | 217 | 736 | 1.43 | 101 | 931 |
+| zstd | 9 | 1.91 | 91 | 734 | 1.45 | 44 | 622 |
+| zstd | 19 | 1.98 | 7 | 899 | 1.48 | 5 | 765 |
+| bzip2 | 1 | 2.07 | 17 | 38 | 1.48 | 13 | 29 |
+| bzip2 | 9 | 2.07 | 16 | 31 | 1.48 | 12 | 23 |
+| lz4 | 1 | 1.76 | 334 | 1251 | 1.31 | 247 | 1181 |
+| lz4 | 9 | 1.76 | 337 | 1260 | 1.27 | 293 | 1193 |
 
 ## Performance graphs
 
 The graphs below plot the same reference run (all four fields, all
-filters). They were drawn from `reference_results.csv` by
+filters, generated on 2026-11-01 with nep-compress 1.2.0). They were drawn from `reference_results.csv` by
 `performance/plot_compare_filters.py`; run that script on your own
 `compare_filters.csv` to get the same graphs for your machine.
 
@@ -167,9 +175,9 @@ levels (for szip, the 32 pixels per block).
 
 ### Simple performance graphs
 
-@image html compare_filters_write_simple.png "Figure 1. Compression ratio vs write throughput, fastest level of each filter, shuffle on." width=100%
+@image html compare_filters_write_simple.png "Figure 1. Compression ratio vs write throughput, fastest level of each filter, shuffle on. Generated 2026-11-01 with nep-compress 1.2.0, NetCDF-C 4.10.2-development (5baa62e69) and HDF5 2.1.1." width=100%
 
-@image html compare_filters_read_simple.png "Figure 2. Compression ratio vs read throughput, fastest level of each filter, shuffle on." width=100%
+@image html compare_filters_read_simple.png "Figure 2. Compression ratio vs read throughput, fastest level of each filter, shuffle on. Generated 2026-11-01 with nep-compress 1.2.0, NetCDF-C 4.10.2-development (5baa62e69) and HDF5 2.1.1." width=100%
 
 *Figures 1 and 2* show one setting per filter so the filters can be
 compared directly. For each filter, the level with the highest write
@@ -184,9 +192,9 @@ runs, so each point has the same height in both figures.
 
 ### Complex performance graphs
 
-@image html compare_filters_write.png "Figure 3. Compression ratio vs write throughput, every filter and level, shuffle off and on." width=100%
+@image html compare_filters_write.png "Figure 3. Compression ratio vs write throughput, every filter and level, shuffle off and on. Generated 2026-11-01 with nep-compress 1.2.0, NetCDF-C 4.10.2-development (5baa62e69) and HDF5 2.1.1." width=100%
 
-@image html compare_filters_read.png "Figure 4. Compression ratio vs read throughput, every filter and level, shuffle off and on." width=100%
+@image html compare_filters_read.png "Figure 4. Compression ratio vs read throughput, every filter and level, shuffle off and on. Generated 2026-11-01 with nep-compress 1.2.0, NetCDF-C 4.10.2-development (5baa62e69) and HDF5 2.1.1." width=100%
 
 *Figures 3 and 4* show every setting that was measured: none, deflate
 levels 1, 5 and 9, szip, zstd levels 1, 3, 9 and 19, bzip2 levels 1
@@ -215,24 +223,27 @@ may behave differently. They still support some clear conclusions.
   filters.
 - **zstd level 1 with shuffle is the best general choice when every
   reader has the zstd plugin.** It matched deflate 1's ratio (1.87 vs
-  1.88 on `tmp2m`, 1.42 vs 1.40 on `prate_ave`) while writing about 4
-  times faster (254 vs 63 MB/s on `tmp2m`) and reading 2 to 3 times
-  faster (788 vs 356 MB/s).
+  1.88 on `tmp2m`, 1.42 vs 1.40 on `prate_ave`) while writing 3 to 5
+  times faster (255 vs 51 MB/s on `tmp2m`, 170 vs 51 MB/s on
+  `prate_ave`) and reading 2.5 to 3 times faster (718 vs 287 MB/s on
+  `tmp2m`, 829 vs 265 MB/s on `prate_ave`).
 - **Use deflate level 1 with shuffle when portability matters most.**
   Deflate is built into every HDF5 library, so any NetCDF-4 reader can
   open the file with no plugin. Higher deflate levels are rarely worth
   it: on `tmp2m`, level 9 gained 2% in ratio (1.92 vs 1.88) but wrote
-  4.5 times slower.
+  3.7 times slower.
 - **Use LZ4 with shuffle when speed matters more than size**, for
   example scratch files, checkpoints or data that is read many times.
   It was the fastest filter for both writing and reading in every
-  field, at a ratio about 6% below zstd 1 on `tmp2m` and 8-11% below on
-  `prate_ave`. Readers need the nep-compress LZ4 plugin.
+  field. Its ratio was about 6% below zstd 1 on `tmp2m` and 8-11%
+  below on `prate_ave`. Readers need the
+  nep-compress LZ4 plugin.
 - **For the smallest archive files, use zstd level 19 with shuffle.** It
-  writes slowly (7 MB/s on `tmp2m`) but reads as fast as zstd 1, which
+  writes slowly (7 MB/s on `tmp2m`) but reads about as fast as zstd 1
+  (899 vs 718 MB/s on `tmp2m`, 765 vs 829 MB/s on `prate_ave`), which
   suits data that is written once and read often. bzip2 gave the
   highest ratio on `tmp2m` (2.07 vs 1.98) and tied on `prate_ave`, but
-  it read at only 23-38 MB/s, 20-25 times slower than zstd. Choose it
+  it read at only 23-38 MB/s, 19-29 times slower than zstd 1. Choose it
   only when size matters far more than read time.
 - **Do not combine szip with shuffle.** Shuffle lowered szip's ratio on
   every field (`tmp2m` 2.03 to 1.83, `prate_ave` 1.27 to 1.15, `soilw1`

@@ -279,16 +279,18 @@ Fortran gaps and quirks:
   `-DNETCDF_PLUGIN_INSTALL=ON -DNETCDF_WITH_PLUGIN_DIR=<dir>` (CMake) or
   `--enable-plugins --with-plugin-dir=<dir>` (autotools). Default install
   dir is `<prefix>/hdf5/lib/plugin`.
-- On this machine `/usr/local/netcdf-c/hdf5/lib/plugin` contains both
-  NetCDF-C wrappers and HDF Group `hdf5_plugins` builds (`libh5bz2.so`
-  ID 307, `libh5lz4.so` ID 32004, `libh5lzf.so` ID 32000, `libh5jpeg.so`
-  ID 32019). It therefore has two ID 307 providers (`libh5bz2.so`,
-  `lib__nch5bzip2.so`) and a second ID 32004 provider besides
-  nep-compress's `build/plugin/libh5lz4.so`. Do not put both LZ4
-  directories on one `HDF5_PLUGIN_PATH`. The `/usr/local` `libh5lz4.so`
-  is an `e1`-semantics build (it takes `cd_values[0]` as the
-  acceleration), not a standard provider, so do not use it as an LZ4
-  reference; build upstream hdf5_plugins `master` instead.
+- On this machine `/usr/local/netcdf-c/hdf5/lib/plugin` holds only
+  NetCDF-C's own eight plugins (`lib__nch5{bzip2,zstd,shuffle,
+  fletcher32,deflate,szip}.so`, `lib__ncz{hdf5filters,stdfilters}.so`),
+  from netcdf-c `main` `5baa62e69` built against HDF5 2.1.1 (Debug) on
+  2026-11-01. It has no `libh5lz4`, `libh5bz2`, `libh5lzf` or
+  `libh5jpeg`. `/usr/local/hdf5/lib/plugin`, second on the default
+  path, has no `lib__nch5*` or `libh5lz4`, but still has HDF Group
+  `libh5bz2` (so ID 307 has two providers on the default path),
+  `libh5jpeg` (linked to HDF5 1.14.6) and old 2025-02-06 `lib__ncz*`
+  codec libraries. Do not use any `/usr/local` LZ4 build as a
+  reference. The old ones took `cd_values[0]` as the acceleration
+  (`e1` semantics). Build upstream hdf5_plugins `master` instead.
 
 ## Writing an HDF5 filter plugin
 

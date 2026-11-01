@@ -1,5 +1,22 @@
 # Roadmap
 
+## V1.3.0 Include JPEG-LS Filter Code
+
+
+### Sprint 1: Redo Graphs with Fixed LZ4 Filter
+- Machine first. Done on 2026-11-01: a fresh `/usr/local/netcdf-c` with only NetCDF-C's own plugins, from `main` `5baa62e69` against HDF5 2.1.1; the old `lib__nch5*` and `libh5lz4.*` removed from `/usr/local/hdf5/lib/plugin`. Still to delete: `/usr/local/nep-compress`, the repo `build-*` trees and the conda/Spack scratch installs. Keep NEP's copies and `~/plugins/lz4-upstream`.
+- Measure from a `v1.2.0` worktree in a fresh build. `perf_compare_filters` already checks that the LZ4 plugin is the build's own. Commit the new `reference_results.csv` and the four PNGs.
+- New `performance/record_machine.sh` writes `reference_machine.txt`: the date, nep-compress version and commit, NetCDF-C, HDF5, lz4, zstd, bzip2, libaec, zlib, the compiler, each plugin's path, sha256 and HDF5 linkage, and the Python and matplotlib versions.
+- The mainpage, abstract, `compression.md` and `performance/README.md` get the new numbers, the level names and a "generated on <date> with nep-compress 1.2.0 and …" statement. The netcdf skill's plugin notes and the README's plugin-directory sentence are updated.
+- Main then moves to CMake `VERSION 1.3.0` (SOVERSION 1).
+- Out of scope: the remaining HDF Group plugins in `/usr/local/hdf5/lib/plugin`, a Release build of NetCDF-C, NEP's LZ4 builds, text inside the PNGs, JPEG-LS benchmarks, 1.3.0 release notes.
+
+Plan: [docs/plans/v1.3.0-sprint1-redo-graphs-with-fixed-lz4-filter.md](plans/v1.3.0-sprint1-redo-graphs-with-fixed-lz4-filter.md)
+
+### Sprint 2: Add JPEG-LS HDF5 Filter Code
+- The EUMETSAT fcidecomp package is not available on spack. We will take a copy of the HDF5 JPEG-LS filter code and build it with nep-compress.
+- Note in the README and the docs that we are using filter code from the HDF5 Group, and EUMETSAT. Note also that I have reached out to both teams to see if they can get on both spack and conda, so I could eliminate this duplication of code.
+
 ## V1.2.0 Compression Filter for Meteosat
 
 ### Sprint 1: Add JPEG-LS Filter Support

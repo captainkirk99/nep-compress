@@ -38,6 +38,41 @@ the C/Fortran API and likewise requires an **external JPEG-LS plugin**
 
 **Extended abstract:** [docs/nep-compress-abstract.md](docs/nep-compress-abstract.md)
 
+## Performance
+
+The `perf_compare_filters` test rewrites four real GDAS surface fields
+(`tmp2m`, `prate_ave`, `soilw1`, `land`) with every lossless NetCDF-4
+filter and measures compression ratio and end-to-end write and read
+throughput. The charts below show one setting per filter with shuffle
+on: for each filter, the level with the highest mean write throughput
+(deflate 1, zstd 1, bzip2 1, LZ4 9, szip 32). Top right is best. The
+x axis is logarithmic, and so is the y axis for `land`.
+
+![Compression ratio vs write throughput for none, deflate 1, szip 32, zstd 1, bzip2 1 and LZ4 9, shuffle on, on four GDAS surface fields; generated 2026-11-01 with nep-compress 1.2.0](docs/images/compare_filters_write_simple.png)
+
+**Figure 1.** Compression ratio vs write throughput, fastest level of
+each filter, shuffle on. Generated 2026-11-01 with nep-compress 1.2.0,
+NetCDF-C 4.10.2-development (`5baa62e69`) and HDF5 2.1.1.
+
+![Compression ratio vs read throughput for none, deflate 1, szip 32, zstd 1, bzip2 1 and LZ4 9, shuffle on, on four GDAS surface fields; generated 2026-11-01 with nep-compress 1.2.0](docs/images/compare_filters_read_simple.png)
+
+**Figure 2.** Compression ratio vs read throughput for the same runs as
+Figure 1. Generated 2026-11-01 with nep-compress 1.2.0, NetCDF-C
+4.10.2-development (`5baa62e69`) and HDF5 2.1.1.
+
+LZ4 was the fastest writer and reader in every field. zstd 1 matched
+deflate 1's ratio at 1.7 to 5 times its write speed. bzip2 gave the
+highest ratios but was the slowest writer. Results come from one machine (Intel Core
+i7-6800K, Linux) and one data set. See
+[performance/reference_machine.txt](performance/reference_machine.txt)
+for every library version and
+[performance/reference_results.csv](performance/reference_results.csv)
+for the numbers. The
+[documentation](https://captainkirk99.github.io/nep-compress/) has the
+full comparison and recommendations, and
+[performance/README.md](performance/README.md) explains how to run the
+test on your own data.
+
 ## Dependencies
 
 - CMake 3.18+, a C compiler, pkg-config, NetCDF-C 4.10.0+ (4.10.1+ for
@@ -59,10 +94,10 @@ filenames alone are not proof of compatibility. Do not mix a system-HDF5
 plugin with another incompatible HDF5 installation.
 
 The BZIP2 plugin directory must contain exactly one provider of filter
-ID 307, and no provider of filter ID 32004 (LZ4). On the local
-development machine `/usr/local/netcdf-c/hdf5/lib/plugin` has two ID
-307 providers and an ID 32004 provider, so create an isolated directory
-instead:
+ID 307, and no provider of filter ID 32004 (LZ4). A shared plugin
+directory, or NetCDF-C's default plugin path, can hold several
+providers (for example HDF Group hdf5_plugins builds next to
+NetCDF-C's), so create an isolated directory:
 
 ```sh
 mkdir -p "$HOME/plugins/bzip2-only"
