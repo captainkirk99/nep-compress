@@ -15,7 +15,7 @@ requires an external HDF5 plugin that provides ID 307 for both writing
 and reading; the C functions are NetCDF-C's own. For JPEG-LS, the
 EUMETSAT FCIDECOMP filter used for Meteosat FCI
 imagery, nep-compress provides the C and Fortran API plus a plugin
-built from the vendored fcidecomp and CharLS sources. The [extended abstract](https://github.com/captainkirk99/nep-compress/blob/main/docs/nep-compress-abstract.md)
+built from the vendored fcidecomp sources, linked against CharLS. The [extended abstract](https://github.com/captainkirk99/nep-compress/blob/main/docs/nep-compress-abstract.md)
 describes the package and its measured compression guidance.
 
 # Provided filters
@@ -52,7 +52,7 @@ chunked storage. The filters available to NetCDF-4 users:
 | zstandard | 32015 | NetCDF-C plugin `lib__nch5zstd` | Yes | `nc_def_var_zstandard(ncid, varid, level)` | levels -131072 to 22 | Wide range from fast to high ratio | Yes |
 | bzip2 | 307 | External HDF5 plugin (NetCDF-C ships `lib__nch5bzip2`; other providers exist) | Yes | `nc_def_var_bzip2(ncid, varid, level)` (NetCDF-C) | level 1-9 (block size 100-900 KB) | Favors ratio over speed | Yes |
 | LZ4 | 32004 | nep-compress (vendored HDF Group plugin) `libh5lz4` | Yes | `nc_def_var_lz4(ncid, varid, level)` | level 1-9 (fast-mode acceleration; stored as {0, 1-level}) | Favors speed | Yes |
-| JPEG-LS | 32018 | `libh5jpegls`, built by nep-compress from vendored fcidecomp + CharLS | Yes | `nc_def_var_jpegls(ncid, varid, near)` | near 0 (lossless) or 1-127 / 1-255; 8/16-bit integer types, rank 2-3 | Strong on integer imagery; used for Meteosat FCI L1c | Yes when near = 0; lossy when near > 0 |
+| JPEG-LS | 32018 | `libh5jpegls`, built by nep-compress from vendored fcidecomp, links CharLS | Yes | `nc_def_var_jpegls(ncid, varid, near)` | near 0 (lossless) or 1-127 / 1-255; 8/16-bit integer types, rank 2-3 | Strong on integer imagery; used for Meteosat FCI L1c | Yes when near = 0; lossy when near > 0 |
 
 Note that `nc_def_var_zstandard()` does nothing when NetCDF-C was built
 without zstd; check `NC_HAS_ZSTD` or `nc-config --has-zstd` before

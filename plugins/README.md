@@ -35,16 +35,8 @@ is installed under `share/doc/nepcompress/`.
 `plugins/fcidecomp/` holds the EUMETSAT fcidecomp JPEG-LS filter code
 (HDF5 filter 32018, "FCIDECOMP"), vendored from
 `gaubert/fcidecomp-open-repo` (Apache-2.0) at commit
-`30ec37d647aeccce5e893ab48957dc30170d6a54`, the last revision before the
-CharLS 2.x port. Only comments may be added to these files; the code
-must stay identical to upstream, with one exception:
-
-- `fcicomp_jpegls.c` carries one marked patch (search for
-  "nep-compress patch"): when the image is multi-component and the
-  user left `ilv = 0`, the CharLS call uses `ILV_LINE`. CharLS 1.x
-  encodes multi-component `ILV_NONE` streams it cannot decode; the
-  JPEG-LS stream header records the mode actually used, so output
-  still decodes under CharLS 1.x and 2.x providers.
+`64ecbb39c4768dac0855b32a13b02441df1cfed2`. Only comments may be added
+to these files; the code must stay identical to upstream.
 
 Files, all from `src/fcidecomp/`:
 
@@ -55,20 +47,14 @@ Files, all from `src/fcidecomp/`:
 - `fcicomp-jpegls`: `src/fcicomp_jpegls.c`,
   `include/fcicomp_jpegls{,_messages}.h`
 
-# CharLS provenance
+The plugin links CharLS 2.x (`JpegLsEncode`, `JlsParameters` and friends
+from `charls/charls.h`), found at configure time through the `charls`
+CMake package or a header/library search. CharLS is not vendored: it is
+packaged on conda-forge (`charls`), Spack and Debian/Ubuntu
+(`libcharls-dev`).
 
-`plugins/charls-1.1.0/` is the CharLS 1.1.0 source tree
-(`team-charls/charls` tag `1.1.0`, commit
-`f752a3e31bdf82dff2e1d9f3310950cbe49edeaa`, BSD-3-Clause). CharLS 1.x is
-pinned because `fcicomp_jpegls.c` uses the CharLS 1.x C API
-(`JlsParameters`, `JpegLsEncode`, `JpegLsDecode`); the plugin must keep
-EUMETSAT's exact compression semantics. The `.cpp` files are compiled
-into the plugin; no system CharLS is needed.
-
-The EUMETSAT license is in `plugins/COPYING.fcidecomp` and the CharLS
-license in `plugins/COPYING.charls`; both are installed under
+The EUMETSAT license is in `plugins/COPYING.fcidecomp`, installed under
 `share/doc/nepcompress/`.
 
-The fcidecomp and CharLS code is vendored only because neither package
-is available on Spack or conda-forge. Once they are, this duplication
-can be dropped.
+The fcidecomp code is vendored only because it is not available on Spack
+or conda-forge. Once it is, this duplication can be dropped.

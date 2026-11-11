@@ -69,7 +69,17 @@ if(NEPCOMPRESS_BUILD_BZIP2)
 endif()
 
 if(NEPCOMPRESS_BUILD_JPEGLS)
-    enable_language(CXX)
+    # The vendored fcidecomp code uses the CharLS 2.x legacy C API
+    # (JpegLsEncode/JlsParameters). Prefer its CMake package config;
+    # fall back to a manual header/library search.
+    find_package(charls 2.1 CONFIG)
+    if(NOT charls_FOUND)
+        find_library(CHARLS_LIBRARY charls)
+    endif()
+    find_path(CHARLS_INCLUDE_DIR NAMES charls.h PATH_SUFFIXES charls)
+    if(NOT CHARLS_INCLUDE_DIR OR (NOT charls_FOUND AND NOT CHARLS_LIBRARY))
+        message(FATAL_ERROR "CharLS 2.x not found; install libcharls-dev or add it to CMAKE_PREFIX_PATH")
+    endif()
 endif()
 
 # NetCDF-C fixed an input-length bug in its zstd plugin in 4.10.1;
@@ -112,22 +122,32 @@ if(NEPCOMPRESS_BUILD_LZ4)
 endif()
 
 if(NEPCOMPRESS_BUILD_JPEGLS)
-    file(GLOB CHARLS_SOURCES plugins/charls-1.1.0/*.cpp)
     add_library(h5jpegls MODULE
         plugins/fcidecomp/H5Zjpegls.c
         plugins/fcidecomp/fcicomp_log.c
-        plugins/fcidecomp/fcicomp_jpegls.c
-        ${CHARLS_SOURCES})
+        plugins/fcidecomp/fcicomp_jpegls.c)
     set_target_properties(h5jpegls PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugin"
-        BUILD_RPATH "${HDF5_LIBRARY_DIRS}")
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugin")
     target_include_directories(h5jpegls PRIVATE
-        plugins plugins/fcidecomp plugins/charls-1.1.0 ${HDF5_INCLUDE_DIRS})
-    target_compile_definitions(h5jpegls PRIVATE CHARLS_STATIC)
-    target_link_libraries(h5jpegls PRIVATE ${HDF5_LIBRARIES})
+        plugins plugins/fcidecomp ${HDF5_INCLUDE_DIRS} ${CHARLS_INCLUDE_DIR})
+    # Upstream fcidecomp builds with LOGGING defined (default level
+    # ERROR_SEVERITY); its no-logging header path does not compile.
+    target_compile_definitions(h5jpegls PRIVATE LOGGING)
+    if(charls_FOUND)
+        get_target_property(_charls_loc charls IMPORTED_LOCATION_RELEASE)
+        if(NOT _charls_loc)
+            get_target_property(_charls_loc charls IMPORTED_LOCATION_NOCONFIG)
+        endif()
+        get_filename_component(_charls_dir "${_charls_loc}" DIRECTORY)
+        target_link_libraries(h5jpegls PRIVATE charls ${HDF5_LIBRARIES})
+    else()
+        get_filename_component(_charls_dir "${CHARLS_LIBRARY}" DIRECTORY)
+        target_link_libraries(h5jpegls PRIVATE ${CHARLS_LIBRARY} ${HDF5_LIBRARIES})
+    endif()
+    set_target_properties(h5jpegls PROPERTIES
+        BUILD_RPATH "${HDF5_LIBRARY_DIRS};${_charls_dir}")
     install(TARGETS h5jpegls LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugin)
-    install(FILES plugins/COPYING.fcidecomp plugins/COPYING.charls
-        DESTINATION ${CMAKE_INSTALL_DOCDIR})
+    install(FILES plugins/COPYING.fcidecomp DESTINATION ${CMAKE_INSTALL_DOCDIR})
 endif()
 
 if(NEPCOMPRESS_ENABLE_FORTRAN)

@@ -70,8 +70,9 @@ From [*Earth Observation in Practice: A Mission-by-Mission Guide to Reading Sate
 
 - Filter ID: **32018** (registered as FCIDECOMP).
 - nep-compress builds its own JPEG-LS plugin (`libh5jpegls.so`) from
-  the vendored EUMETSAT fcidecomp filter code and CharLS 1.1.0, in
-  `plugins/fcidecomp/` and `plugins/charls-1.1.0/`; see
+  the vendored EUMETSAT fcidecomp filter code in `plugins/fcidecomp/`,
+  linked against CharLS 2.x (`libcharls-dev` or the `charls`
+  conda-forge/Spack package); see
   `plugins/README.md` for provenance. Configure with
   `NEPCOMPRESS_BUILD_JPEGLS=ON`; the plugin is built into
   `build/plugin` and installed to `lib/plugin` next to `libh5lz4.so`.

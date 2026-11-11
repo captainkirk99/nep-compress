@@ -6,8 +6,8 @@ dependencies:
   - ninja
   - pkg-config
   - c-compiler
-  - cxx-compiler
   - fortran-compiler
+  - charls
   - python
   - hdf5 >=1.14
   - libnetcdf >=4.10.1

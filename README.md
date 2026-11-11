@@ -9,8 +9,8 @@ nep-compress supports the following additional compression filters for netCDF:
 causing almost no addition delay when writing or reading data.
 * JPEG-LS - EUMETSAT's FCIDECOMP filter (ID 32018), used for Meteosat
 FCI Level-1c imagery; nep-compress builds the plugin itself from
-vendored fcidecomp and CharLS sources. Works on 8- and 16-bit integer
-data.
+vendored fcidecomp sources, linked against CharLS 2.x. Works on 8- and
+16-bit integer data.
 
 ## Provenence of nep-compress
 
@@ -30,14 +30,14 @@ nep-compress **builds two HDF5 plugins**: an LZ4 plugin (`libh5lz4.so`,
 filter ID 32004) and a JPEG-LS plugin (`libh5jpegls.so`, filter ID
 32018). The LZ4 plugin source is the HDF Group hdf5_plugins LZ4 filter,
 vendored unchanged; the JPEG-LS plugin is the EUMETSAT fcidecomp filter
-code on top of CharLS 1.1.0, both vendored; see
+code, vendored and linked against CharLS 2.x; see
 [plugins/README.md](plugins/README.md) for provenance. The fcidecomp
-and CharLS code is duplicated here only until those packages are
-available on Spack and conda-forge (both teams have been contacted).
+code is duplicated here only until it is available on Spack and
+conda-forge (the HDF Group and EUMETSAT teams have been contacted).
 For BZIP2 (ID 307), it builds the C/Fortran API but requires a compatible
 **external HDF5 BZIP2 plugin** for both writing and reading. `libbz2` alone
 is not a plugin. BZIP2 and JPEG-LS are OFF by default; JPEG-LS builds
-also need a C++ compiler, because CharLS is C++.
+need CharLS 2.x (`libcharls-dev`, or the `charls` conda/Spack package).
 
 **Documentation:** https://captainkirk99.github.io/nep-compress/
 
@@ -105,6 +105,8 @@ test on your own data.
   encoder and decoder; pass its directory to
   `NEPCOMPRESS_BZIP2_PLUGIN_DIR`. The CMake probe fails rather than
   silently skipping enabled BZIP2 coverage.
+- For JPEG-LS, CharLS 2.x (`apt install libcharls-dev`, or the `charls`
+  conda-forge/Spack package).
 
 One provider is a matching HDF5 plugin package (for example a
 `hdf5plugin` package installed in the *same* Conda environment as HDF5).
@@ -176,7 +178,7 @@ equivalent if a custom NetCDF or HDF5 is installed.
 | `NEPCOMPRESS_BUILD_LZ4` | ON | Build LZ4 API and plugin |
 | `NEPCOMPRESS_BUILD_BZIP2` | OFF | Build the Fortran BZIP2 API and tests (uses NetCDF-C's nc_def_var_bzip2; requires an external HDF5 plugin) |
 | `NEPCOMPRESS_BZIP2_PLUGIN_DIR` | empty | Directory to probe for BZIP2 when enabled |
-| `NEPCOMPRESS_BUILD_JPEGLS` | OFF | Build the JPEG-LS (ID 32018) API, the vendored fcidecomp/CharLS plugin and tests (needs a C++ compiler) |
+| `NEPCOMPRESS_BUILD_JPEGLS` | OFF | Build the JPEG-LS (ID 32018) API, the vendored fcidecomp plugin and tests (needs CharLS 2.x) |
 | `NEPCOMPRESS_ZSTD_PLUGIN_DIR` | empty | zstd (32015) plugin directory; enables the `perf_compare_filters` test (ignored with NetCDF-C older than 4.10.1) |
 | `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
 | `NEPCOMPRESS_BUILD_BENCHMARKS` | OFF | Build slow, manual LZ4/BZIP2 examples |
@@ -186,8 +188,7 @@ equivalent if a custom NetCDF or HDF5 is installed.
 
 The LZ4 plugin source is © The HDF Group under
 `plugins/COPYING.hdf5_plugins`. The JPEG-LS plugin source is © EUMETSAT
-under `plugins/COPYING.fcidecomp` (Apache-2.0) and © Jan de Vaan under
-`plugins/COPYING.charls` (BSD-3-Clause).
+under `plugins/COPYING.fcidecomp` (Apache-2.0).
 
 ## Install with Spack
 

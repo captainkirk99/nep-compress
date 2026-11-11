@@ -9,8 +9,8 @@
  * netcdf_filter.h, which this header includes. JPEG-LS (ID 32018) is
  * EUMETSAT's FCIDECOMP filter, as used for Meteosat FCI Level-1c
  * data. nep-compress builds its own plugin for it from the vendored
- * EUMETSAT fcidecomp and CharLS sources, and it works only on 8- and
- * 16-bit integer imagery. Defining a filter must
+ * EUMETSAT fcidecomp sources, linked against CharLS, and it works
+ * only on 8- and 16-bit integer imagery. Defining a filter must
  * be done in define mode, on a NetCDF-4 variable, before any data is
  * written; applying a filter forces chunked storage. The corresponding
  * HDF5 plugin must be on HDF5_PLUGIN_PATH for both writing and
