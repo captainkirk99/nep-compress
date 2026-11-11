@@ -180,9 +180,9 @@ contains
   !> must be 1-4, the last two chunk dimensions are each at most 65535,
   !> and there must be at least 16 pixels per chunk. Changing the
   !> chunking after this call to a shape outside these limits makes
-  !> HDF5 store the data uncompressed without an error. An external
-  !> HDF5 plugin that implements filter ID 32018 (EUMETSAT fcidecomp or
-  !> hdf5plugin) must be available on HDF5_PLUGIN_PATH.
+  !> HDF5 store the data uncompressed without an error. The
+  !> nep-compress JPEG-LS plugin (vendored fcidecomp code, filter ID
+  !> 32018) must be available on HDF5_PLUGIN_PATH.
   !>
   !> @param ncid NetCDF file ID.
   !> @param varid Variable ID (1-based, as in the NetCDF Fortran API).

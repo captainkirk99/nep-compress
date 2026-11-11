@@ -15,7 +15,7 @@ STRIP_FROM_PATH        = @NEPC_SOURCE_DIR@
 FILE_PATTERNS          = *.h *.c *.F90 *.f90 *.md
 EXTENSION_MAPPING      = F90=FortranFree f90=FortranFree
 RECURSIVE              = YES
-EXCLUDE_PATTERNS       = */build/* */README.md
+EXCLUDE_PATTERNS       = */build/* */README.md */fcidecomp/* */charls-1.1.0/*
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 PREDEFINED             = NEPCOMPRESS_BUILD_LZ4 NEPCOMPRESS_BUILD_BZIP2 NEPCOMPRESS_BUILD_JPEGLS

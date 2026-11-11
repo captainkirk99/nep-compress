@@ -11,8 +11,8 @@ NetCDF-Fortran: the LZ4 compression filter (HDF5 filter ID 32004),
 whose plugin is built and installed by nep-compress; Fortran wrappers
 for NetCDF-C's BZIP2 functions (ID 307); and C and Fortran functions
 for EUMETSAT's JPEG-LS filter (ID 32018), the compression used for
-Meteosat Third Generation FCI Level-1c imagery, supplied by the
-external fcidecomp plugin. All filters follow the standard
+Meteosat Third Generation FCI Level-1c imagery, whose plugin is built
+by nep-compress from vendored fcidecomp and CharLS sources. All filters follow the standard
 `nc_def_var_*`/`nc_inq_var_*` convention, and HDF5 loads the plugins
 at run time, so existing applications read the compressed files
 without modification. A benchmark rewrites four real GDAS surface fields with
@@ -59,8 +59,9 @@ requires CMake 3.18+, a C compiler, pkg-config, NetCDF-C 4.10.0+
 (4.10.1+ for the `perf_compare_filters` test), HDF5 1.14+ with C/HL
 libraries, and liblz4 when LZ4 is enabled. The optional Fortran
 wrappers require a Fortran compiler and NetCDF-Fortran from the same
-NetCDF-C/HDF5 installation. BZIP2 and JPEG-LS each require an
-external HDF5 plugin.
+NetCDF-C/HDF5 installation. BZIP2 requires an external HDF5 plugin;
+JPEG-LS requires only a C++ compiler, because its plugin is built from
+vendored sources.
 
 nep-compress builds with CMake and can be installed with Spack or
 conda. Complete and up-to-date build instructions can be found in the
@@ -89,7 +90,7 @@ multi-byte data. nep-compress adds LZ4 and JPEG-LS:
 | zstandard | 32015 | NetCDF-C plugin `lib__nch5zstd` | `nc_def_var_zstandard(ncid, varid, level)` |
 | bzip2 | 307 | External HDF5 plugin (NetCDF-C ships `lib__nch5bzip2`) | `nc_def_var_bzip2(ncid, varid, level)` |
 | LZ4 | 32004 | nep-compress plugin `libh5lz4` | `nc_def_var_lz4(ncid, varid, level)` |
-| JPEG-LS | 32018 | External EUMETSAT fcidecomp plugin (also in hdf5plugin) | `nc_def_var_jpegls(ncid, varid, near)` |
+| JPEG-LS | 32018 | nep-compress plugin `libh5jpegls` (vendored fcidecomp + CharLS) | `nc_def_var_jpegls(ncid, varid, near)` |
 
 ## LZ4 - Speed First
 
@@ -152,8 +153,10 @@ cannot handle, so data is never silently stored uncompressed.
 `nc_inq_var_jpegls` reads the 13-parameter form the plugin stores in
 FCI files.
 
-nep-compress does not build a JPEG-LS plugin; the external fcidecomp
-or hdf5plugin provider does the compression. JPEG-LS is not part of
+nep-compress builds the JPEG-LS plugin itself from the vendored
+EUMETSAT fcidecomp filter code and CharLS 1.1.0, so files it writes
+are readable by the fcidecomp and hdf5plugin providers, and FCI files
+are readable by nep-compress's plugin. JPEG-LS is not part of
 the benchmark below, because the benchmark fields are floating-point.
 
 # Compression Performance
@@ -304,10 +307,9 @@ cache paths, with their defaults, are:
 | --- | --- | --- |
 | `NEPCOMPRESS_BUILD_LZ4` | ON | Build LZ4 API and plugin |
 | `NEPCOMPRESS_BUILD_BZIP2` | OFF | Build the Fortran BZIP2 API and tests (requires an external ID 307 plugin) |
-| `NEPCOMPRESS_BUILD_JPEGLS` | OFF | Build the JPEG-LS (ID 32018) API and tests (requires an external plugin) |
+| `NEPCOMPRESS_BUILD_JPEGLS` | OFF | Build the JPEG-LS (ID 32018) API, the vendored fcidecomp/CharLS plugin and tests (needs a C++ compiler) |
 | `NEPCOMPRESS_ENABLE_FORTRAN` | ON | Build Fortran wrappers and module |
 | `NEPCOMPRESS_BZIP2_PLUGIN_DIR` | empty | Directory to probe for the BZIP2 plugin |
-| `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` | empty | Directory to probe for the JPEG-LS plugin |
 | `NEPCOMPRESS_ZSTD_PLUGIN_DIR` | empty | zstd plugin directory; enables `perf_compare_filters` |
 
 With Spack, the `nep-compress` package is being submitted to

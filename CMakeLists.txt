@@ -6,7 +6,7 @@ include(CTest)
 
 option(NEPCOMPRESS_BUILD_LZ4 "Build the LZ4 API and HDF5 plugin" ON)
 option(NEPCOMPRESS_BUILD_BZIP2 "Build the Fortran BZIP2 API and tests (uses NetCDF-C's nc_def_var_bzip2; requires an external HDF5 plugin)" OFF)
-option(NEPCOMPRESS_BUILD_JPEGLS "Build the JPEG-LS (ID 32018) API and tests (requires an external EUMETSAT fcidecomp HDF5 plugin)" OFF)
+option(NEPCOMPRESS_BUILD_JPEGLS "Build the JPEG-LS (ID 32018) API and vendored HDF5 plugin" OFF)
 option(NEPCOMPRESS_ENABLE_FORTRAN "Build Fortran compression wrappers" ON)
 option(NEPCOMPRESS_BUILD_BENCHMARKS "Build slow LZ4/BZIP2 performance examples" OFF)
 option(NEPCOMPRESS_BUILD_DOCS "Build Doxygen HTML documentation" OFF)
@@ -14,7 +14,6 @@ set(NEPCOMPRESS_DOCS_WARN_AS_ERROR "NO" CACHE STRING
     "Doxygen WARN_AS_ERROR value (e.g. FAIL_ON_WARNINGS)")
 set(NEPCOMPRESS_BZIP2_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 307")
 set(NEPCOMPRESS_ZSTD_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 32015 (zstd); enables the performance test")
-set(NEPCOMPRESS_JPEGLS_PLUGIN_DIR "" CACHE PATH "Directory containing an HDF5 plugin for filter 32018 (JPEG-LS, fcidecomp)")
 set(NEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR "" CACHE PATH "Optional previous LZ4 plugin directory for cross-plugin file tests")
 
 if(NOT NEPCOMPRESS_BUILD_LZ4 AND NOT NEPCOMPRESS_BUILD_BZIP2 AND NOT NEPCOMPRESS_BUILD_JPEGLS)
@@ -70,10 +69,7 @@ if(NEPCOMPRESS_BUILD_BZIP2)
 endif()
 
 if(NEPCOMPRESS_BUILD_JPEGLS)
-    if(NOT IS_DIRECTORY "${NEPCOMPRESS_JPEGLS_PLUGIN_DIR}")
-        message(FATAL_ERROR "Set NEPCOMPRESS_JPEGLS_PLUGIN_DIR to a directory with an HDF5 filter 32018 (JPEG-LS) plugin")
-    endif()
-    nepc_require_filter_plugin(32018 "${NEPCOMPRESS_JPEGLS_PLUGIN_DIR}" NEPCOMPRESS_JPEGLS_PLUGIN_OK)
+    enable_language(CXX)
 endif()
 
 # NetCDF-C fixed an input-length bug in its zstd plugin in 4.10.1;
@@ -113,6 +109,25 @@ if(NEPCOMPRESS_BUILD_LZ4)
     target_link_libraries(h5lz4 PRIVATE PkgConfig::LZ4 ${HDF5_LIBRARIES})
     install(TARGETS h5lz4 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugin)
     install(FILES plugins/COPYING.hdf5_plugins DESTINATION ${CMAKE_INSTALL_DOCDIR})
+endif()
+
+if(NEPCOMPRESS_BUILD_JPEGLS)
+    file(GLOB CHARLS_SOURCES plugins/charls-1.1.0/*.cpp)
+    add_library(h5jpegls MODULE
+        plugins/fcidecomp/H5Zjpegls.c
+        plugins/fcidecomp/fcicomp_log.c
+        plugins/fcidecomp/fcicomp_jpegls.c
+        ${CHARLS_SOURCES})
+    set_target_properties(h5jpegls PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/plugin"
+        BUILD_RPATH "${HDF5_LIBRARY_DIRS}")
+    target_include_directories(h5jpegls PRIVATE
+        plugins plugins/fcidecomp plugins/charls-1.1.0 ${HDF5_INCLUDE_DIRS})
+    target_compile_definitions(h5jpegls PRIVATE CHARLS_STATIC)
+    target_link_libraries(h5jpegls PRIVATE ${HDF5_LIBRARIES})
+    install(TARGETS h5jpegls LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugin)
+    install(FILES plugins/COPYING.fcidecomp plugins/COPYING.charls
+        DESTINATION ${CMAKE_INSTALL_DOCDIR})
 endif()
 
 if(NEPCOMPRESS_ENABLE_FORTRAN)

@@ -6,6 +6,7 @@ dependencies:
   - ninja
   - pkg-config
   - c-compiler
+  - cxx-compiler
   - fortran-compiler
   - python
   - hdf5 >=1.14
