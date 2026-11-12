@@ -14,8 +14,13 @@
 Plan: [docs/plans/v1.3.0-sprint1-redo-graphs-with-fixed-lz4-filter.md](plans/v1.3.0-sprint1-redo-graphs-with-fixed-lz4-filter.md)
 
 ### Sprint 2: Add JPEG-LS HDF5 Filter Code
-- The EUMETSAT fcidecomp package is not available on spack. We will take a copy of the HDF5 JPEG-LS filter code and build it with nep-compress.
-- Note in the README and the docs that we are using filter code from the HDF5 Group, and EUMETSAT. Note also that I have reached out to both teams to see if they can get on both spack and conda, so I could eliminate this duplication of code.
+- nep-compress builds and installs its own filter-32018 plugin from the vendored EUMETSAT fcidecomp `H5Zjpegls.c` code (in `plugins/fcidecomp/`: the H5Zjpegls files plus `fcicomp-common` and `fcicomp-jpegls` from `gaubert/fcidecomp-open-repo` `main`), compiled into `build/plugin` like `h5lz4`.
+- The plugin links CharLS 2.x (`libcharls-dev` or the `charls` conda-forge/Spack package), which upstream's current code uses via its legacy C API. No CharLS is vendored and no C++ is needed.
+- `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` and the configure probe are removed; the JPEG-LS tests use `build/plugin`. The C/Fortran API is unchanged. `plugins/h5z_jpegls.c` (the unrelated ID-32012 scratch file) is deleted.
+- README, `compression.md` and the mainpage credit the HDF Group / EUMETSAT fcidecomp code and CharLS, and note Ed has contacted both teams about getting onto Spack and conda. License: `COPYING.fcidecomp`.
+- Out of scope: Spack/conda recipe changes (a `depends_on charls` goes with the later `jpegls` variant), JPEG-LS benchmarks, FCI test data, release notes.
+
+Plan: [docs/plans/v1.3.0-sprint2-add-jpeg-ls-hdf5-filter-code.md](plans/v1.3.0-sprint2-add-jpeg-ls-hdf5-filter-code.md)
 
 ## V1.2.0 Compression Filter for Meteosat
 

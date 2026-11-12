@@ -14,7 +14,7 @@ function(add_compression_test name source plugin_dir)
     set_tests_properties(${name} PROPERTIES
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${name}"
         ENVIRONMENT "HDF5_PLUGIN_PATH=${plugin_dir};NETCDF_RC=${CMAKE_CURRENT_BINARY_DIR}/${name};NCRCENV_RC=${PROJECT_BINARY_DIR}/no.ncrc")
-    if(plugin_dir STREQUAL "${PROJECT_BINARY_DIR}/plugin")
+    if(plugin_dir STREQUAL "${PROJECT_BINARY_DIR}/plugin" AND TARGET h5lz4)
         add_dependencies(${name} h5lz4)
     endif()
 endfunction()
@@ -30,7 +30,8 @@ if(NEPCOMPRESS_BUILD_BZIP2)
     add_compression_test(tst_h_bzip2 tst_h_bzip2.c "${NEPCOMPRESS_BZIP2_PLUGIN_DIR}")
 endif()
 if(NEPCOMPRESS_BUILD_JPEGLS)
-    add_compression_test(tst_jpegls tst_jpegls.c "${NEPCOMPRESS_JPEGLS_PLUGIN_DIR}")
+    add_compression_test(tst_jpegls tst_jpegls.c "${PROJECT_BINARY_DIR}/plugin")
+    add_dependencies(tst_jpegls h5jpegls)
     set_tests_properties(tst_jpegls PROPERTIES FIXTURES_SETUP jpegls_file)
     add_test(NAME jpegls_missing_plugin COMMAND tst_jpegls missing)
     set_tests_properties(jpegls_missing_plugin PROPERTIES
@@ -65,11 +66,12 @@ if(NEPCOMPRESS_ENABLE_FORTRAN)
         add_executable(ftst_nep_jpegls ftst_nep_jpegls.F90)
         set_target_properties(ftst_nep_jpegls PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
         target_link_libraries(ftst_nep_jpegls PRIVATE nepcompressf ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+        add_dependencies(ftst_nep_jpegls h5jpegls)
         file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_jpegls")
         add_test(NAME ftst_nep_jpegls COMMAND ftst_nep_jpegls)
         set_tests_properties(ftst_nep_jpegls PROPERTIES
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_jpegls"
-            ENVIRONMENT "HDF5_PLUGIN_PATH=${NEPCOMPRESS_JPEGLS_PLUGIN_DIR};NETCDF_RC=${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_jpegls;NCRCENV_RC=${PROJECT_BINARY_DIR}/no.ncrc")
+            ENVIRONMENT "HDF5_PLUGIN_PATH=${PROJECT_BINARY_DIR}/plugin;NETCDF_RC=${CMAKE_CURRENT_BINARY_DIR}/ftst_nep_jpegls;NCRCENV_RC=${PROJECT_BINARY_DIR}/no.ncrc")
     endif()
 endif()
 

@@ -29,3 +29,32 @@ the registered definition of filter 32004.
 
 The HDF Group license notice is in `plugins/COPYING.hdf5_plugins`; it
 is installed under `share/doc/nepcompress/`.
+
+# JPEG-LS plugin provenance
+
+`plugins/fcidecomp/` holds the EUMETSAT fcidecomp JPEG-LS filter code
+(HDF5 filter 32018, "FCIDECOMP"), vendored from
+`gaubert/fcidecomp-open-repo` (Apache-2.0) at commit
+`64ecbb39c4768dac0855b32a13b02441df1cfed2`. Only comments may be added
+to these files; the code must stay identical to upstream.
+
+Files, all from `src/fcidecomp/`:
+
+- `fcicomp-H5Zjpegls`: `src/H5Zjpegls.c`,
+  `include/H5Zjpegls{,_definitions,_messages}.h`
+- `fcicomp-common`: `src/fcicomp_log.c`,
+  `include/fcicomp_{errors,log,options}.h`
+- `fcicomp-jpegls`: `src/fcicomp_jpegls.c`,
+  `include/fcicomp_jpegls{,_messages}.h`
+
+The plugin links CharLS 2.x (`JpegLsEncode`, `JlsParameters` and friends
+from `charls/charls.h`), found at configure time through the `charls`
+CMake package or a header/library search. CharLS is not vendored: it is
+packaged on conda-forge (`charls`), Spack and Debian/Ubuntu
+(`libcharls-dev`).
+
+The EUMETSAT license is in `plugins/COPYING.fcidecomp`, installed under
+`share/doc/nepcompress/`.
+
+The fcidecomp code is vendored only because it is not available on Spack
+or conda-forge. Once it is, this duplication can be dropped.

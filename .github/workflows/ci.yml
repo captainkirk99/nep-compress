@@ -65,7 +65,6 @@ jobs:
           echo "BZIP2_PLUGIN_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
           echo "LZ4_REFERENCE_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
           echo "ZSTD_PLUGIN_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
-          echo "JPEGLS_PLUGIN_DIR=${BZIP2_PLUGIN_DIR}" >> "${GITHUB_ENV}"
           ls "${BZIP2_PLUGIN_DIR}"
 
       - name: Configure
@@ -86,7 +85,6 @@ jobs:
             -DNEPCOMPRESS_BUILD_JPEGLS=${{ matrix.jpegls }} \
             -DNEPCOMPRESS_ENABLE_FORTRAN=${{ matrix.fortran }} \
             -DNEPCOMPRESS_BZIP2_PLUGIN_DIR="${BZIP2_PLUGIN_DIR}" \
-            -DNEPCOMPRESS_JPEGLS_PLUGIN_DIR="${JPEGLS_PLUGIN_DIR}" \
             -DNEPCOMPRESS_ZSTD_PLUGIN_DIR="${ZSTD_PLUGIN_DIR}" \
             -DNEPCOMPRESS_REFERENCE_LZ4_PLUGIN_DIR="${LZ4_REFERENCE_DIR}" \
             "${ASAN_FLAGS[@]}" \

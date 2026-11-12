@@ -69,12 +69,14 @@ From [*Earth Observation in Practice: A Mission-by-Mission Guide to Reading Sate
 > To read JPEG-LS-compressed FCI NetCDF-4 files you must install the `fcidecomp` decompression software from EUMETSAT. `fcidecomp` supplies the `H5ZJPEGLS` HDF5 filter plugin, which the HDF5 library loads automatically when the file is opened. Once the plugin is installed, reads are transparent: `netCDF4.Dataset()` or `h5py.File()` behave as if the data were uncompressed. Without the plugin, accessing a compressed variable fails because the library does not recognise the filter.
 
 - Filter ID: **32018** (registered as FCIDECOMP).
-- nep-compress does **not** build a JPEG-LS plugin. Get one from
-  EUMETSAT fcidecomp (`libH5Zjpegls.so`; conda `-c eumetsat fcidecomp`
-  or a source build) or from hdf5plugin (`libh5fcidecomp.so`), then
-  configure with `NEPCOMPRESS_BUILD_JPEGLS=ON` and
-  `NEPCOMPRESS_JPEGLS_PLUGIN_DIR` pointing at a directory that holds
-  exactly one 32018 provider.
+- nep-compress builds its own JPEG-LS plugin (`libh5jpegls.so`) from
+  the vendored EUMETSAT fcidecomp filter code in `plugins/fcidecomp/`,
+  linked against CharLS 2.x (`libcharls-dev` or the `charls`
+  conda-forge/Spack package); see
+  `plugins/README.md` for provenance. Configure with
+  `NEPCOMPRESS_BUILD_JPEGLS=ON`; the plugin is built into
+  `build/plugin` and installed to `lib/plugin` next to `libh5lz4.so`.
+  Do not put a second 32018 provider on `HDF5_PLUGIN_PATH`.
 - `nc_def_var_jpegls(ncid, varid, near)` enables the filter. The
   variable must be of type `NC_BYTE`, `NC_UBYTE`, `NC_SHORT` or
   `NC_USHORT` and rank 2 or 3. If it is not chunked yet, NetCDF-C's
@@ -144,8 +146,9 @@ file is not automatically readable without a decoder.
 Keep exactly one provider per filter ID on `HDF5_PLUGIN_PATH`. When
 two plugins register the same ID, which one HDF5 loads is not
 defined. In particular, the BZIP2 directory must hold one ID 307
-provider and no ID 32004 (LZ4) provider, and the JPEG-LS directory
-must hold exactly one ID 32018 provider.
+provider and no ID 32004 (LZ4) provider, and only one 32018 provider
+may be on the path: either nep-compress's own `libh5jpegls.so` or an
+external one, not both.
 
 ## Benchmarks and compatibility
 
@@ -175,7 +178,9 @@ files written through old NEP, in either direction, is not a release
 requirement; matching IDs alone do not establish such compatibility.
 For JPEG-LS, nep-compress writes the same 32018 parameter layout as
 EUMETSAT's fcidecomp, because the plugin doing the work is
-fcidecomp's own.
+fcidecomp's own code, vendored in `plugins/fcidecomp/`. Files written
+by it can also be read by the fcidecomp or hdf5plugin providers, and
+EUMETSAT FCI files can be read by nep-compress's plugin.
 
 ## Changes in 1.2.0
 
